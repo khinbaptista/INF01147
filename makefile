@@ -40,7 +40,10 @@ $(Project): $(OBJ)
 %.o: %.c
 	$(CC) -MMD -c -o $@ $< $(CFLAGS)
 
+lex: scanner.l
+	lex scanner.l && gcc lex.yy.c && ./a.out
+
 clean:
-	rm -f *.o *.d $(Project)
+	rm -f *.o *.d lex.yy.c a.out $(Project)
 
 ##################################################
