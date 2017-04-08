@@ -10,7 +10,7 @@
 CC	= gcc
 LINKER	= gcc
 
-CFLAGS	= -Wall -std=c99
+CFLAGS	= -std=c99
 LDFLAGS	=
 
 ##################################################
@@ -19,7 +19,7 @@ LDFLAGS	=
 Project = etapa1
 
 # Source files names
-SourceFiles = main.c hash.c
+SourceFiles = main.c etapa1.c lex.yy.c #main.c hash.c
 
 ##################################################
 
@@ -40,10 +40,13 @@ $(Project): $(OBJ)
 %.o: %.c
 	$(CC) -MMD -c -o $@ $< $(CFLAGS)
 
-lex: scanner.l
-	lex scanner.l && gcc lex.yy.c && ./a.out
+lex.yy.c: scanner.l
+	lex scanner.l
+
+test: lex.yy.c
+	gcc tests/index.c -o test.out && ./test.out && rm ./test.out
 
 clean:
-	rm -f *.o *.d lex.yy.c a.out $(Project)
+	rm -f *.o *.d lex.yy.c $(Project)
 
 ##################################################
