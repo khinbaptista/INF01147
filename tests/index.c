@@ -25,7 +25,8 @@ int compareTokens(char* in, int* tokens, int numTokens) {
     int result = 1;
     for(int i = 0; i < numTokens; ++i) {
         int token = yylex();
-        printf("%s => %d -> %d\n",in, token, tokens[i]);
+        // Debug printing
+        // printf("%s => %d -> %d\n",in, token, tokens[i]);
         if(tokens[i] != token) {
             result = 0;
             break;
@@ -69,6 +70,7 @@ void run_all_tests() {
     testTOKEN_ERROR();
     testCommentSingle();
     testCommentMulti();
+    testComplexString();
 }
 
 

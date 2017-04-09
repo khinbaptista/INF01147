@@ -26,3 +26,14 @@ void testCommentMulti() {
     int error[]= {TK_IDENTIFIER, '*', '/', LIT_REAL};
     assert(compareTokens("test*/1.1", error, 4), "Multi line comment false positive");
 }
+
+void testComplexString() {
+    int tokens[] = {KW_FLOAT, TK_IDENTIFIER, '=', LIT_REAL, TK_IDENTIFIER,
+        OPERATOR_GE, LIT_INTEGER, LIT_STRING, '+', LIT_CHAR, TOKEN_ERROR};
+    assert(compareTokens(
+        "float var = 1.2 /*var is a variable\n*/\n\
+        var >= 1 \t//comments here\n\n\n\
+        \"String\\\"\" + 'c' \n\
+        |",
+        tokens, 11), "Complex string not matching");
+}
