@@ -19,7 +19,7 @@ LDFLAGS	=
 Project = etapa1
 
 # Source files names
-SourceFiles = main.c etapa1.c lex.yy.c #main.c hash.c
+SourceFiles = main.c etapa1.c lex.yy.c hash.c
 
 ##################################################
 
