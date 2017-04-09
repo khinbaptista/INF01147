@@ -1,7 +1,11 @@
+/****************************************
+	INF01147 - Compiladores
+	Khin Baptista
+	Lorenzo Dal'Aqua
+****************************************/
+
 #include "etapa1.h"
 #include "hash.h"
-
-int yylex();
 
 void initMe() {
 	lineNumber = 1;

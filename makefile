@@ -1,7 +1,9 @@
 ##################################################
 #
 #	Makefile
+#
 #	--
+#	INF01147 - Compiladores
 #	Khin Baptista
 #	Lorenzo Dal'Aqua
 #

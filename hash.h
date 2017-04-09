@@ -1,3 +1,11 @@
+#pragma once
+
+/****************************************
+	INF01147 - Compiladores
+	Khin Baptista
+	Lorenzo Dal'Aqua
+****************************************/
+
 #define HASH_SIZE 997
 
 typedef struct hash_node {

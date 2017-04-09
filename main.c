@@ -1,3 +1,9 @@
+/****************************************
+	INF01147 - Compiladores
+	Khin Baptista
+	Lorenzo Dal'Aqua
+****************************************/
+
 #include <stdio.h>
 #include "hash.h"
 #include "etapa1.h"

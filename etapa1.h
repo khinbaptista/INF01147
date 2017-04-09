@@ -1,5 +1,11 @@
 #pragma once
 
+/****************************************
+	INF01147 - Compiladores
+	Khin Baptista
+	Lorenzo Dal'Aqua
+****************************************/
+
 #include "tokens.h"
 
 // Globals
