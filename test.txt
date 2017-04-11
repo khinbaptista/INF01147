@@ -1,0 +1,5 @@
+// Test file 1
+
+for (short i = 10; i < 502; i = i + 4) {
+	print("This is print");
+}

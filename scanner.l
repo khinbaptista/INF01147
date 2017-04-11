@@ -1,6 +1,9 @@
 %{
+
 #include "tokens.h"
 #include "etapa1.h"
+#include "hash.h"
+
 %}
 
 %x COMMENT
@@ -26,11 +29,11 @@
 "!="                            { return OPERATOR_NE; }
 "&&"                            { return OPERATOR_AND; }
 \|\|                            { return OPERATOR_OR; }
-[_a-zA-Z][_a-zA-Z0-9]*          { return TK_IDENTIFIER; }
-[0-9]+                          { return LIT_INTEGER; }
-[0-9]+\.[0-9]+                  { return LIT_REAL; }
-"'"."'"                         { return LIT_CHAR; }
-\"(\\.|[^\"\n])*\"              { return LIT_STRING; }
+[_a-zA-Z][_a-zA-Z0-9]*          { hash_insert(TK_IDENTIFIER, yytext); return TK_IDENTIFIER; }
+[0-9]+                          { hash_insert(LIT_INTEGER, yytext); return LIT_INTEGER; }
+[0-9]+\.[0-9]+                  { hash_insert(LIT_REAL, yytext); return LIT_REAL; }
+"'"."'"                         { hash_insert(LIT_CHAR, yytext); return LIT_CHAR; }
+\"(\\.|[^\"\n])*\"              { hash_insert(LIT_STRING, yytext); return LIT_STRING; }
 [-,;:\(\)\[\]\{\}+*/<>=!&$#]    { return yytext[0]; }
 \/\/.*
 \/\*                            { BEGIN(COMMENT); }
