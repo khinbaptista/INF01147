@@ -12,16 +12,16 @@
 CC	= gcc
 LINKER	= gcc
 
-CFLAGS	= -std=c99
+CFLAGS	= -std=c99 -Wall
 LDFLAGS	=
 
 ##################################################
 
 # Name of the project (executable binary)
-Project = etapa1
+Project = lang171
 
 # Source files names
-SourceFiles = main.c etapa1.c lex.yy.c hash.c
+SourceFiles = main.c lex.yy.c y.tab.c hash.c lang171.c
 
 ##################################################
 
@@ -44,6 +44,10 @@ $(Project): $(OBJ)
 
 lex.yy.c: scanner.l
 	lex scanner.l
+
+y.tab.h:
+y.tab.c: parser.y
+	yacc -d parser.y
 
 test: lex.yy.c
 	gcc tests/index.c -o test.out && ./test.out && rm ./test.out
