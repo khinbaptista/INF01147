@@ -35,52 +35,53 @@
 
 %%
 
-TYPE:		KW_BYTE | KW_SHORT | KW_LONG | KW_FLOAT | KW_DOUBLE ;
-LITERAL:	LIT_INTEGER | LIT_REAL | LIT_CHAR
+type:		KW_BYTE | KW_SHORT | KW_LONG | KW_FLOAT | KW_DOUBLE ;
+literal:	LIT_INTEGER | LIT_REAL | LIT_CHAR
 
 
-GLOBAL_DECL_SET:	GLOBAL_DECL GLOBAL_DECL_SET | ;
-GLOBAL_DECL:		FUNC_DECL ';' | VAR_DECL ';' ;
+global_decl_set:	global_decl global_decl_set | ;
+global_decl:		func_decl ';' | var_decl ';' ;
 
-VAR_DECL:	TK_IDENTIFIER ':' TYPE LITERAL ';' |
-		TK_IDENTIFIER ':' TYPE'[' LIT_INTEGER ']' ARRAY_INIT ';'
-ARRAY_INIT:	LITERAL ARRAY_INIT | ;
+var_decl:	TK_IDENTIFIER ':' type literal ';' |
+		TK_IDENTIFIER ':' type'[' LIT_INTEGER ']' array_init ';'
+array_init:	literal array_init | ;
 
-FUNC_DECL:	TYPE TK_IDENTIFIER '(' ARGS_LIST ')' COMMAND ;
-ARGS_LIST:	ARGS | ;
-ARGS:		ARGS ',' ARG | ARG ;
-ARG:		TYPE TK_IDENTIFIER ;
+func_decl:	type TK_IDENTIFIER '(' args_list ')' command ;
+args_list:	args | ;
+args:		args ',' arg | arg ;
+arg:		type TK_IDENTIFIER ;
 
-FUNC_CALL:	TK_IDENTIFIER '(' PARAMS_LIST ')' ;
-PARAMS_LIST:	PARAMS | ;
-PARAMS:		PARAMS ',' PARAM | PARAM ;
-PARAM:		EXPR_ARG
+func_call:	TK_IDENTIFIER '(' params_list ')' ;
+params_list:	params | ;
+params:		params ',' param | param ;
+param:		expr_arg
 
 
-COMMAND:	COMMAND_BLOCK | COMMAND_SIMPLE
+command:	command_block | command_simple
 
-COMMAND_BLOCK:	'{' COMMAND_SEQ '}'
-COMMAND_SEQ:	COMMAND_SEQ COMMAND ';' | ;
+command_block:	'{' command_seq '}'
+command_seq:	command_seq command ';' | ;
 
-COMMAND_SIMPLE:	VAR_ATTR | FLOW_CTRL | BASIC_COMMAND | ;
-VAR_ATTR:	TK_IDENTIFIER '=' EXPR |
-		TK_IDENTIFIER '#' EXPR '=' EXPR ;
-BASIC_COMMAND:	KW_READ TK_IDENTIFIER |
-		KW_PRINT PRINT_ARGS |
-		KW_RETURN EXPR ;
-PRINT_ARGS:	PRINT_ARG | PRINT_ARGS PRINT_ARG
-PRINT_ARG:	LIT_STRING | EXPR
+command_simple:	var_attr | flow_ctrl | basic_command | ;
+var_attr:	TK_IDENTIFIER '=' expr |
+		TK_IDENTIFIER '#' expr '=' expr ;
+basic_command:	KW_READ TK_IDENTIFIER |
+		KW_PRINT print_args |
+		KW_RETURN expr ;
+print_args:	print_arg | print_args print_arg
+print_arg:	LIT_STRING | expr
 
-EXPR:		'(' EXPR ')' | EXPR_ARG EXPR_OP EXPR_ARG ;
-EXPR_ARG:	TK_IDENTIFIER | FUNC_CALL | LITERAL ;
-EXPR_OP:	'+' | '-' | '*' | '/' | '<' | '>' | '!' |
+expr:		'(' expr ')' | expr_arg expr_op expr_arg ;
+expr_arg:	TK_IDENTIFIER | func_call | literal ;
+expr_op:	'+' | '-' | '*' | '/' | '<' | '>' | '!' |
 		OPERATOR_LE | OPERATOR_GE | OPERATOR_EQ |
 		OPERATOR_NE | OPERATOR_OR | OPERATOR_AND ;
 
-FLOW_CTRL:
+flow_ctrl:
 
 %%
 
 void yyerror(char* what) {
 	fprintf(stderr, "Parser error at line %d: %s\n", getLineNumber(), what);
+	exit(3);
 }

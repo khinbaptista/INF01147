@@ -18,7 +18,7 @@ LDFLAGS	=
 ##################################################
 
 # Name of the project (executable binary)
-Project = lang171
+Project = etapa2
 
 # Source files names
 SourceFiles = main.c lex.yy.c y.tab.c hash.c lang171.c
