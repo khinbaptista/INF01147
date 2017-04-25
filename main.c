@@ -7,9 +7,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "hash.h"
-#include "etapa1.h"
+#include "lang171.h"
 
 extern FILE* yyin;
+void yyparse(void);
 
 int main(int argc, char* argv[]) {
 	initMe();

@@ -4,7 +4,7 @@
 	Lorenzo Dal'Aqua
 ****************************************/
 
-#include "etapa1.h"
+#include "lang171.h"
 #include "hash.h"
 
 void initMe() {
