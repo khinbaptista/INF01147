@@ -29,7 +29,8 @@ int main(int argc, char* argv[]) {
 	yyin = input;
 
 	yyparse();
-
+	printf("\n==== No syntax errors found. ====\n");
+	printf("Hash table contents: \n");
 	hash_print();
 	fclose(input);
 	exit(0);

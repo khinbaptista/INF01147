@@ -12,7 +12,7 @@
 CC	= gcc
 LINKER	= gcc
 
-CFLAGS	= -std=c99 -Wall
+CFLAGS	= -std=c99 -Wall -Wno-implicit-function-declaration -Wno-unused-function
 LDFLAGS	=
 
 ##################################################

@@ -1,4 +1,5 @@
-etapa1
+etapa*
 *.o
 *.d
 lex.yy.c
+y.tab.*
