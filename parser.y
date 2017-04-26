@@ -28,6 +28,9 @@
 
 %token TOKEN_ERROR
 
+%left '+' '-'
+%left '*' '/'
+
 %{
 
 #include <stdio.h>
@@ -139,8 +142,9 @@ flow_ctrl	:	KW_WHEN '(' expr ')' KW_THEN command
 ;
 
 expr	:	'(' expr ')'
-		|	expr_arg expr_op expr_arg
-		|	expr_unary_op expr_arg
+		|	expr expr_op expr_arg
+		|	'!' expr
+		|	'-' expr %prec  '-'
 		| 	expr_arg
 ;
 
@@ -154,10 +158,6 @@ expr_op	:	'+'		|	'-' 	|	'*'
 		|	'/' 	|	'<'		|	'>'
 		|	OPERATOR_LE | OPERATOR_GE | OPERATOR_EQ
 		|	OPERATOR_NE | OPERATOR_OR | OPERATOR_AND
-;
-
-expr_unary_op	:	'-'
-				|	'!'
 ;
 
 %%
