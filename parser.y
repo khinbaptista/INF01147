@@ -98,7 +98,7 @@ params	:	params ',' param
 		|	param
 ;
 
-param	:	expr_arg
+param	:	expr
 ;
 
 command	:	command_block
@@ -142,7 +142,18 @@ flow_ctrl	:	KW_WHEN '(' expr ')' KW_THEN command
 ;
 
 expr	:	'(' expr ')'
-		|	expr expr_op expr_arg
+		|	expr '+' expr
+		|	expr '-' expr
+		|	expr '*' expr
+		|	expr '/' expr
+		|	expr '<' expr
+		|	expr '>' expr
+		|	expr OPERATOR_LE expr
+		|	expr OPERATOR_GE expr
+		|	expr OPERATOR_EQ expr
+		|	expr OPERATOR_NE expr
+		|	expr OPERATOR_OR expr
+		|	expr OPERATOR_AND expr
 		|	'!' expr
 		|	'-' expr %prec  '-'
 		| 	expr_arg
@@ -152,12 +163,6 @@ expr_arg	:	TK_IDENTIFIER
 			|	TK_IDENTIFIER'['expr']'
 			|	func_call
 			|	literal
-;
-
-expr_op	:	'+'		|	'-' 	|	'*'
-		|	'/' 	|	'<'		|	'>'
-		|	OPERATOR_LE | OPERATOR_GE | OPERATOR_EQ
-		|	OPERATOR_NE | OPERATOR_OR | OPERATOR_AND
 ;
 
 %%
