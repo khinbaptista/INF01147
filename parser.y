@@ -36,6 +36,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "lang171.h"	// getLineNumber()
+#include "astree.h"
 
 %}
 
@@ -141,22 +142,22 @@ flow_ctrl	:	KW_WHEN '(' expr ')' KW_THEN command
 			|	KW_FOR '(' TK_IDENTIFIER '=' expr KW_TO expr ')' command
 ;
 
-expr	:	'(' expr ')'
-		|	expr '+' expr
-		|	expr '-' expr
-		|	expr '*' expr
-		|	expr '/' expr
-		|	expr '<' expr
-		|	expr '>' expr
-		|	expr OPERATOR_LE expr
-		|	expr OPERATOR_GE expr
-		|	expr OPERATOR_EQ expr
-		|	expr OPERATOR_NE expr
-		|	expr OPERATOR_OR expr
-		|	expr OPERATOR_AND expr
-		|	'!' expr
-		|	'-' expr %prec  '-'
-		| 	expr_arg
+expr	:	'(' expr ')'			{ $$ = astree_create(PARENTHESIS,	$2, NULL, NULL, NULL, NULL); }
+		|	expr '+' expr			{ $$ = astree_create(ADD,			$1, $3, NULL, NULL, NULL); }
+		|	expr '-' expr			{ $$ = astree_create(SUBTRACT,		$1, $3, NULL, NULL, NULL); }
+		|	expr '*' expr			{ $$ = astree_create(MULTIPLY,		$1, $3, NULL, NULL, NULL); }
+		|	expr '/' expr			{ $$ = astree_create(DIVIDE,		$1, $3, NULL, NULL, NULL); }
+		|	expr '<' expr			{ $$ = astree_create(LESS,			$1, $3, NULL, NULL, NULL); }
+		|	expr '>' expr			{ $$ = astree_create(GREATER,		$1, $3, NULL, NULL, NULL); }
+		|	expr OPERATOR_LE expr	{ $$ = astree_create(LESS_EQUAL,	$1, $3, NULL, NULL, NULL); }
+		|	expr OPERATOR_GE expr	{ $$ = astree_create(GREATER_EQUAL,	$1, $3, NULL, NULL, NULL); }
+		|	expr OPERATOR_EQ expr	{ $$ = astree_create(EQUAL,			$1, $3, NULL, NULL, NULL); }
+		|	expr OPERATOR_NE expr	{ $$ = astree_create(NOT_EQUAL,		$1, $3, NULL, NULL, NULL); }
+		|	expr OPERATOR_OR expr	{ $$ = astree_create(OR,			$1, $3, NULL, NULL, NULL); }
+		|	expr OPERATOR_AND expr	{ $$ = astree_create(AND,			$1, $3, NULL, NULL, NULL); }
+		|	'!' expr				{ $$ = astree_create(NOT,			$2, NULL, NULL, NULL, NULL); }
+		|	'-' expr %prec  '-'		{ $$ = astree_create(MINUS,			$2, NULL, NULL, NULL, NULL); }
+		| 	expr_arg				{ $$ = $1; }
 ;
 
 expr_arg	:	TK_IDENTIFIER

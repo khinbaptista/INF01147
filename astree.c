@@ -2,11 +2,11 @@
 
 ASTree* astree_create(
 	int type,
-	ASTree* child1 = NULL,
-	ASTree* child2 = NULL,
-	ASTree* child3 = NULL,
-	ASTree* child4 = NULL,
-	HashNode* symbol = NULL
+	ASTree* child1,
+	ASTree* child2,
+	ASTree* child3,
+	ASTree* child4,
+	HashNode* symbol
 ) {
 	ASTree* node = calloc(a, sizeof(ASTree));
 	node->type = type;
