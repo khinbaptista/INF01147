@@ -77,11 +77,21 @@
 
 %%
 
-type	:	KW_BYTE
-		|	KW_SHORT
-		|	KW_LONG
-		|	KW_FLOAT
-		|	KW_DOUBLE
+type	:	KW_BYTE		{
+	$$ = astree_create(AST_TYPE_BYTE, NULL, NULL, NULL, NULL, NULL);
+}
+		|	KW_SHORT	{
+	$$ = astree_create(AST_TYPE_SHORT, NULL, NULL, NULL, NULL, NULL);
+}
+		|	KW_LONG		{
+	$$ = astree_create(AST_TYPE_LONG, NULL, NULL, NULL, NULL, NULL);
+}
+		|	KW_FLOAT	{
+	$$ = astree_create(AST_TYPE_FLOAT, NULL, NULL, NULL, NULL, NULL);
+}
+		|	KW_DOUBLE	{
+	$$ = astree_create(AST_TYPE_DOUBLE, NULL, NULL, NULL, NULL, NULL);
+}
 ;
 
 literal	:	LIT_INTEGER
@@ -111,7 +121,7 @@ var_decl	:	TK_IDENTIFIER ':' type literal	{
 array_init	:	literal array_init {
 	$$ = astree_create(AST_ARRAY_INIT, $1, $2, NULL, NULL, NULL);
 }
-			|
+			|		{ $$ = NULL; }
 ;
 
 func_decl	:	type TK_IDENTIFIER '(' params_list ')' command {
