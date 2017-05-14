@@ -1,8 +1,9 @@
 %{
 
-#include "y.tab.h"
 #include "lang171.h"
 #include "hash.h"
+#include "astree.h"
+#include "y.tab.h"
 
 %}
 
@@ -30,11 +31,31 @@
 "!="                            { return OPERATOR_NE; }
 "&&"                            { return OPERATOR_AND; }
 \|\|                            { return OPERATOR_OR; }
-[_a-zA-Z][_a-zA-Z0-9]*          { hash_insert(SYMBOL_TK_IDENTIFIER, yytext); return TK_IDENTIFIER; }
-[0-9]+                          { hash_insert(SYMBOL_LIT_INTEGER, yytext); return LIT_INTEGER; }
-[0-9]+\.[0-9]+                  { hash_insert(SYMBOL_LIT_REAL, yytext); return LIT_REAL; }
-"'"."'"                         { hash_insert(SYMBOL_LIT_CHAR, yytext); return LIT_CHAR; }
-\"(\\.|[^\"\n])*\"              { hash_insert(SYMBOL_LIT_STRING, yytext); return LIT_STRING; }
+[_a-zA-Z][_a-zA-Z0-9]*          {
+	yylval.tree = astree_create(AST_IDENTIFIER, NULL, NULL, NULL, NULL,
+		hash_insert(SYMBOL_TK_IDENTIFIER, yytext));
+	return TK_IDENTIFIER;
+}
+[0-9]+                          {
+	yylval.tree = astree_create(AST_LITERAL, NULL, NULL, NULL, NULL,
+	 	hash_insert(SYMBOL_LIT_INTEGER, yytext));
+	return LIT_INTEGER;
+}
+[0-9]+\.[0-9]+                  {
+	yylval.tree = astree_create(AST_LITERAL, NULL, NULL, NULL, NULL,
+		hash_insert(SYMBOL_LIT_REAL, yytext));
+	return LIT_REAL;
+}
+"'"."'"                         {
+	yylval.tree = astree_create(AST_LITERAL, NULL, NULL, NULL, NULL,
+		hash_insert(SYMBOL_LIT_CHAR, yytext));
+	return LIT_CHAR;
+}
+\"(\\.|[^\"\n])*\"              {
+	yylval.tree = astree_create(AST_LITERAL, NULL, NULL, NULL, NULL,
+		hash_insert(SYMBOL_LIT_STRING, yytext));
+	return LIT_STRING;
+}
 [-,;:\(\)\[\]\{\}+*/<>=!&$#]    { return yytext[0]; }
 \/\/.*
 \/\*                            { BEGIN(COMMENT); }
