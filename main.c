@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "hash.h"
+#include "astree.h"
 #include "lang171.h"
 
 extern FILE* yyin;

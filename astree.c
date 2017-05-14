@@ -1,19 +1,21 @@
 #include "astree.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 ASTree* astree_create(
 	int type,
-	ASTree* child1 = NULL,
-	ASTree* child2 = NULL,
-	ASTree* child3 = NULL,
-	ASTree* child4 = NULL,
-	HashNode* symbol = NULL
+	ASTree* child1,
+	ASTree* child2,
+	ASTree* child3,
+	ASTree* child4,
+	HashNode* symbol
 ) {
-	ASTree* node = calloc(a, sizeof(ASTree));
+	ASTree* node = calloc(1, sizeof(ASTree));
 	node->type = type;
-	node->child1 = child1;
-	node->child2 = child2;
-	node->child3 = child3;
-	node->child4 = child4;
+	node->children[0] = child1;
+	node->children[1] = child2;
+	node->children[2] = child3;
+	node->children[3] = child4;
 	node->symbol = symbol;
 
 	return node;
@@ -32,8 +34,8 @@ void astree_print(ASTree* node, int level) {
 
 	fprintf(stderr, "ASTree - Type %d\n", node->type);
 
-	if (node->child1) astree_print(node->child1, level - 1);
-	if (node->child2) astree_print(node->child2, level - 1);
-	if (node->child3) astree_print(node->child3, level - 1);
-	if (node->child4) astree_print(node->child4, level - 1);
+	if (node->children[0]) astree_print(node->children[0], level - 1);
+	if (node->children[1]) astree_print(node->children[1], level - 1);
+	if (node->children[2]) astree_print(node->children[2], level - 1);
+	if (node->children[3]) astree_print(node->children[3], level - 1);
 }

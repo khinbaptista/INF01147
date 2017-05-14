@@ -18,10 +18,10 @@ LDFLAGS	=
 ##################################################
 
 # Name of the project (executable binary)
-Project = etapa2
+Project = etapa3
 
 # Source files names
-SourceFiles = y.tab.c lex.yy.c hash.c lang171.c main.c
+SourceFiles = y.tab.c lex.yy.c hash.c astree.c lang171.c main.c
 
 ##################################################
 
@@ -42,12 +42,11 @@ $(Project): $(OBJ)
 %.o: %.c
 	$(CC) -MMD -c -o $@ $< $(CFLAGS)
 
+lex.yy.c: scanner.l y.tab.c
+	lex scanner.l
 #y.tab.h:
 y.tab.c: parser.y
 	yacc -d parser.y
-
-lex.yy.c: scanner.l
-	lex scanner.l
 
 test: lex.yy.c
 	gcc tests/index.c -o test.out && ./test.out && rm ./test.out
