@@ -60,16 +60,11 @@ void astree_write_code(FILE* file, ASTree* node) {
 			break;
 
 		// Types
-		case AST_TYPE_BYTE:
-			fprintf(file, "byte"); break;
-		case AST_TYPE_SHORT:
-			fprintf(file, "short"); break;
-		case AST_TYPE_LONG:
-			fprintf(file, "long"); break;
-		case AST_TYPE_FLOAT:
-			fprintf(file, "float"); break;
-		case AST_TYPE_DOUBLE:
-			fprintf(file, "double"); break;
+		case AST_TYPE_BYTE:		fprintf(file, "byte");		break;
+		case AST_TYPE_SHORT:	fprintf(file, "short");		break;
+		case AST_TYPE_LONG:		fprintf(file, "long");		break;
+		case AST_TYPE_FLOAT:	fprintf(file, "float");		break;
+		case AST_TYPE_DOUBLE:	fprintf(file, "double");	break;
 
 		// Variables
 		case AST_VAR_DECL:
@@ -136,30 +131,82 @@ void astree_write_code(FILE* file, ASTree* node) {
 
 		//case AST_CMD: break;
 
-		case AST_CMD_LIST:
-			break;
 		case AST_CMD_BLOCK:
+			fprintf(file, "{");
+			if (node->children[0]) {
+				fprintf(file, "\n");
+				astree_write_code(file, node->children[0]);
+				fprintf(file, "\n");
+			}
+			fprintf(file, "}\n");
+			break;
+		case AST_CMD_LIST:
+			if (node->children[0]) {
+				astree_write_code(file, node->children[0]);
+			}
+			if (node->children[1]) {
+				astree_write_code(file, node->children[1]); fprintf(file, ";\n");
+			}
 			break;
 		case AST_CMD_VAR_ATTR:
+			assert(node->children[0] && node->children[1]);
+			astree_write_code(file, node->children[0]); fprintf(file, " = ");
+			astree_write_code(file, node->children[1]);
 			break;
 		case AST_CMD_ARRAY_ATTR:
+			assert(node->children[0] && node->children[1] && node->children[2]);
+			astree_write_code(file, node->children[0]); fprintf(file, "#");
+			astree_write_code(file, node->children[1]); fprintf(file, " = ");
+			astree_write_code(file, node->children[2]);
 			break;
 		case AST_CMD_READ:
+			assert(node->children[0]);
+			fprintf(file, "read ");
+			astree_write_code(file, node->children[0]);
 			break;
 		case AST_CMD_PRINT:
+			assert(node->children[0]);
+			fprintf(file, "print ");
+			astree_write_code(file, node->children[0]);
 			break;
 		case AST_CMD_RETURN:
+			assert(node->children[0]);
+			fprintf(file, "return ");
+			astree_write_code(file, node->children[0]);
 			break;
 		case AST_PRINT_ARGS:
+			assert(node->children[0]);
+			astree_write_code(file, node->children[0]);
+			if (node->children[1]) {
+				fprintf(file, " "); astree_write_code(file, node->children[1]);
+			}
 			break;
 		case AST_CMD_WHEN:
+			assert(node->children[0]);
+			fprintf(file, "when ("); astree_write_code(file, node->children[0]);
+			fprintf(file, ")\nthen ");
+			if (node->children[1]) { astree_write_code(file, node->children[1]); }
+			if (node->children[2]) {
+				fprintf(file, "\nelse ");
+				astree_write_code(file, node->children[2]);
+			}
 			break;
 		case AST_CMD_WHILE:
+			assert(node->children[0]);
+			fprintf(file, "while ("); astree_write_code(file, node->children[0]);
+			fprintf(file, ")\n");
+			if (node->children[1]) { astree_write_code(file, node->children[1]); }
 			break;
 		case AST_CMD_FOR:
+			assert(node->children[0] && node->children[1] && node->children[2]);
+			fprintf(file, "for (");	astree_write_code(file, node->children[0]);
+			fprintf(file, " = ");	astree_write_code(file, node->children[1]);
+			fprintf(file, " to ");	astree_write_code(file, node->children[2]);
+			fprintf(file, ")\n");
+			if (node->children[3]) { astree_write_code(file, node->children[3]); }
 			break;
 
-		// Reconstruction helpers
+		// Reconstruction helper
 		case AST_EXPR_PARENS:
 			break;
 
