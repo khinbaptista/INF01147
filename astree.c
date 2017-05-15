@@ -97,15 +97,39 @@ void astree_write_code(FILE* file, ASTree* node) {
 
 		// Functions
 		case AST_FUNC_DECL:
-
+			assert(node->children[0] && node->children[1] && node->children[3]);
+			astree_write_code(file, node->children[0]); fprintf(file, " ");
+			astree_write_code(file, node->children[1]); fprintf(file, "(");
+			if (node->children[2]) { astree_write_code(file, node->children[2]); }
+			fprintf(file, ") "); astree_write_code(fil,e node->children[3]);
 			break;
 		case AST_FUNC_PARAMS_LIST:
+		//case AST_FUNC_ARGS_LIST:	// rolaria fazer isso, mas se pá é feio
+			assert(node->children[0]);
+			astree_write_code(file, node->children[0]);
+			if (node->children[1]) {
+				fprintf(file, ", ");
+				astree_write_code(file, node->children[1]);
+			}
 			break;
 		case AST_FUNC_PARAM:
+			assert(node->children[0] && node->children[1]);
+			astree_write_code(file, node->children[0]); fprintf(file, " ");
+			astree_write_code(file, node->children[1]);
 			break;
 		case AST_FUNC_CALL:
+			assert(node->children[0]);
+			astree_write_code(file, node->children[0]); fprintf(file, "(");
+			if (node->children[1]) { astree_write_code(file, node->children[1]); }
+			fprintf(file, ")");
 			break;
 		case AST_FUNC_ARGS_LIST:
+			assert(node->children[0]);
+			astree_write_code(file, node->children[0]);
+			if (node->children[1]) {
+				fprintf(file, ", ");
+				astree_write_code(file, node->children[1]);
+			}
 			break;
 
 		// Commands

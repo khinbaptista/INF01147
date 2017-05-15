@@ -137,8 +137,7 @@ params	:	params ',' param	{
 	$$ = astree_create(AST_FUNC_PARAMS_LIST, $1, $3, NULL, NULL, NULL);
 }
 		|	param 			{
-	// o primeiro é null e o segundo é o $1 (??)
-	$$ = astree_create(AST_FUNC_PARAMS_LIST, NULL, $1, NULL, NULL, NULL);
+	$$ = astree_create(AST_FUNC_PARAMS_LIST, $1, NULL, NULL, NULL, NULL);
 }
 ;
 
@@ -160,7 +159,7 @@ args	:	args ',' arg	{
 	$$ = astree_create(AST_FUNC_ARGS_LIST, $1, $3, NULL, NULL, NULL);
 }
 		|	arg		{
-	$$ = astree_create(AST_FUNC_ARGS_LIST, NULL, $1, NULL, NULL, NULL);
+	$$ = astree_create(AST_FUNC_ARGS_LIST, $1, NULL, NULL, NULL, NULL);
 }
 ;
 
@@ -211,7 +210,7 @@ print_args	:	print_args print_arg {
 	$$ = astree_create(AST_PRINT_ARGS, $1, $2, NULL, NULL, NULL);
 }
 			|	print_arg	{
-	$$ = astree_create(AST_PRINT_ARGS, NULL, $1, NULL, NULL, NULL);
+	$$ = astree_create(AST_PRINT_ARGS, $1, NULL, NULL, NULL, NULL);
 }
 ;
 
