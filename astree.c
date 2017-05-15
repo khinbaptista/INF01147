@@ -208,40 +208,105 @@ void astree_write_code(FILE* file, ASTree* node) {
 
 		// Reconstruction helper
 		case AST_EXPR_PARENS:
+			assert(node->children[0]);
+			fprintf(file, "(");
+			astree_write_code(file, node->children[0]);
+			fprintf(file, ")");
 			break;
 
 		// Operators
 		case AST_EXPR_SUM:
+			assert(node->children[0] && node->children[1]);
+			astree_write_code(file, node->children[0]);
+			fprintf(file, " + ");
+			astree_write_code(file, node->children[1]);
 			break;
 		case AST_EXPR_SUB:
+			assert(node->children[0] && node->children[1]);
+			astree_write_code(file, node->children[0]);
+			fprintf(file, " - ");
+			astree_write_code(file, node->children[1]);
 			break;
 		case AST_EXPR_MULT:
+			assert(node->children[0] && node->children[1]);
+			astree_write_code(file, node->children[0]);
+			fprintf(file, " * ");
+			astree_write_code(file, node->children[1]);
 			break;
 		case AST_EXPR_DIV:
+			assert(node->children[0] && node->children[1]);
+			astree_write_code(file, node->children[0]);
+			fprintf(file, " / ");
+			astree_write_code(file, node->children[1]);
 			break;
 		case AST_EXPR_LESSER:
+			assert(node->children[0] && node->children[1]);
+			astree_write_code(file, node->children[0]);
+			fprintf(file, " < ");
+			astree_write_code(file, node->children[1]);
 			break;
 		case AST_EXPR_GREATER:
+			assert(node->children[0] && node->children[1]);
+			astree_write_code(file, node->children[0]);
+			fprintf(file, " > ");
+			astree_write_code(file, node->children[1]);
 			break;
 		case AST_EXPR_LESSER_EQ:
+			assert(node->children[0] && node->children[1]);
+			astree_write_code(file, node->children[0]);
+			fprintf(file, " <= ");
+			astree_write_code(file, node->children[1]);
 			break;
 		case AST_EXPR_GREATER_EQ:
+			assert(node->children[0] && node->children[1]);
+			astree_write_code(file, node->children[0]);
+			fprintf(file, " >= ");
+			astree_write_code(file, node->children[1]);
 			break;
 		case AST_EXPR_EQUAL:
+			assert(node->children[0] && node->children[1]);
+			astree_write_code(file, node->children[0]);
+			fprintf(file, " == ");
+			astree_write_code(file, node->children[1]);
 			break;
 		case AST_EXPR_NOT_EQUAL:
+			assert(node->children[0] && node->children[1]);
+			astree_write_code(file, node->children[0]);
+			fprintf(file, " != ");
+			astree_write_code(file, node->children[1]);
 			break;
 		case AST_EXPR_OR:
+			assert(node->children[0] && node->children[1]);
+			astree_write_code(file, node->children[0]);
+			fprintf(file, " || ");
+			astree_write_code(file, node->children[1]);
 			break;
 		case AST_EXPR_AND:
+			assert(node->children[0] && node->children[1]);
+			astree_write_code(file, node->children[0]);
+			fprintf(file, " && ");
+			astree_write_code(file, node->children[1]);
 			break;
 		case AST_EXPR_NOT:
+			assert(node->children[0]);
+			fprintf(file, "!");
+			astree_write_code(file, node->children[0]);
 			break;
 		case AST_EXPR_NEGATIVE:
+			assert(node->children[0]);
+			fprintf(file, "-");
+			astree_write_code(file, node->children[0]);
 			break;
 		case AST_EXPR_ARRAY_ACCESS:
+			assert(node->children[0] && node->children[1]);
+			astree_write_code(file, node->children[0]);
+			fprintf(file, "[");
+			astree_write_code(file, node->children[1]);
+			fprintf(file, "]");
 			break;
 
-		default: break;
+		default:
+			fprintf(stderr,"Unknown AST node!!");
+			break;
 	}
 }
