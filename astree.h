@@ -1,6 +1,7 @@
 #pragma once
 
 #include "hash.h"
+#include <stdio.h>
 
 #define MAX_CHILDREN 4
 
@@ -69,4 +70,4 @@ ASTree* astree_create(
 
 void astree_print(ASTree* root, int level);
 
-void astree_write_code(FILE*, ASTree*)
+void astree_write_code(FILE* file, ASTree* node);

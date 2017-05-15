@@ -1,6 +1,6 @@
 #include "astree.h"
 #include <stdlib.h>
-#include <stdio.h>
+#include <assert.h>
 
 ASTree* astree_create(
 	int type,
@@ -51,12 +51,12 @@ void astree_write_code(FILE* file, ASTree* node) {
 
 		case AST_LITERAL:
 			assert(node->symbol);
-			fprintf(file, "%s", file->symbol);
+			fprintf(file, "%s", node->symbol->text);
 			break;
 
 		case AST_IDENTIFIER:
 			assert(node->symbol);
-			fprintf(file, "%s", file->symbol);
+			fprintf(file, "%s", node->symbol->text);
 			break;
 
 		// Types
@@ -97,7 +97,7 @@ void astree_write_code(FILE* file, ASTree* node) {
 
 		// Functions
 		case AST_FUNC_DECL:
-			
+
 			break;
 		case AST_FUNC_PARAMS_LIST:
 			break;
@@ -168,7 +168,7 @@ void astree_write_code(FILE* file, ASTree* node) {
 			break;
 		case AST_EXPR_NEGATIVE:
 			break;
-		case AST_EXPR_ARRAY_ACCES:
+		case AST_EXPR_ARRAY_ACCESS:
 			break;
 
 		default: break;
