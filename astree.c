@@ -101,7 +101,7 @@ void astree_write_code(FILE* file, ASTree* node) {
 			astree_write_code(file, node->children[0]); fprintf(file, " ");
 			astree_write_code(file, node->children[1]); fprintf(file, "(");
 			if (node->children[2]) { astree_write_code(file, node->children[2]); }
-			fprintf(file, ") "); astree_write_code(fil,e node->children[3]);
+			fprintf(file, ") "); astree_write_code(file, node->children[3]);
 			break;
 		case AST_FUNC_PARAMS_LIST:
 		//case AST_FUNC_ARGS_LIST:	// rolaria fazer isso, mas se pá é feio
