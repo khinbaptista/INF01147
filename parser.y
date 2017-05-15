@@ -137,6 +137,7 @@ params	:	params ',' param	{
 	$$ = astree_create(AST_FUNC_PARAMS_LIST, $1, $3, NULL, NULL, NULL);
 }
 		|	param 			{
+	// o primeiro é null e o segundo é o $1 (??)
 	$$ = astree_create(AST_FUNC_PARAMS_LIST, NULL, $1, NULL, NULL, NULL);
 }
 ;

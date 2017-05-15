@@ -13,7 +13,7 @@ enum tree_types {	// types
 	AST_TYPE_FLOAT,
 	AST_TYPE_DOUBLE,
 	AST_PROGRAM,
-	AST_CMD,
+	AST_CMD,	// never used?
 	AST_VAR_DECL,
 	AST_ARRAY_DECL,
 	AST_ARRAY_INIT,
@@ -68,3 +68,5 @@ ASTree* astree_create(
 );
 
 void astree_print(ASTree* root, int level);
+
+void astree_write_code(FILE*, ASTree*)
