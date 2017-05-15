@@ -74,14 +74,12 @@ void astree_write_code(FILE* file, ASTree* node) {
 			astree_write_code(file, node->children[2]); fprintf(file, ";\n");
 			break;
 		case AST_ARRAY_DECL:
-			assert(
-				node->children[0] && node->children[1] &&
-				node->children[2] && node->children[3]
-			);
+			assert(node->children[0] && node->children[1] && node->children[2]);
 			astree_write_code(file, node->children[0]); fprintf(file, " : ");
 			astree_write_code(file, node->children[1]); fprintf(file, "[");
 			astree_write_code(file, node->children[2]); fprintf(file, "] ");
-			astree_write_code(file, node->children[3]); fprintf(file, ";\n");
+			if (node->children[3]) { astree_write_code(file, node->children[3]); }
+			fprintf(file, ";\n");
 			break;
 		case AST_ARRAY_INIT:
 			if (node->children[0]) { astree_write_code(file, node->children[0]); }
@@ -92,11 +90,13 @@ void astree_write_code(FILE* file, ASTree* node) {
 
 		// Functions
 		case AST_FUNC_DECL:
-			assert(node->children[0] && node->children[1] && node->children[3]);
+			assert(node->children[0] && node->children[1]);
 			astree_write_code(file, node->children[0]); fprintf(file, " ");
 			astree_write_code(file, node->children[1]); fprintf(file, "(");
 			if (node->children[2]) { astree_write_code(file, node->children[2]); }
-			fprintf(file, ") "); astree_write_code(file, node->children[3]);
+			fprintf(file, ") ");
+			if (node->children[3]) { astree_write_code(file, node->children[3]); }
+			fprintf(file, ";\n");
 			break;
 		case AST_FUNC_PARAMS_LIST:
 		//case AST_FUNC_ARGS_LIST:	// rolaria fazer isso, mas se pá é feio
@@ -186,10 +186,14 @@ void astree_write_code(FILE* file, ASTree* node) {
 			fprintf(file, "when ("); astree_write_code(file, node->children[0]);
 			fprintf(file, ")\nthen ");
 			if (node->children[1]) { astree_write_code(file, node->children[1]); }
-			if (node->children[2]) {
-				fprintf(file, "\nelse ");
-				astree_write_code(file, node->children[2]);
-			}
+			break;
+		case AST_CMD_WHEN_ELSE:
+			assert(node->children[0]);
+			fprintf(file, "when ("); astree_write_code(file, node->children[0]);
+			fprintf(file, ")\nthen ");
+			if (node->children[1]) { astree_write_code(file, node->children[1]); }
+			fprintf(file, "\nelse ");
+			if (node->children[2]) { astree_write_code(file, node->children[2]); }
 			break;
 		case AST_CMD_WHILE:
 			assert(node->children[0]);

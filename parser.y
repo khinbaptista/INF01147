@@ -101,7 +101,7 @@ literal	:	LIT_INTEGER
 
 global_decl_set	: 	global_decl global_decl_set {
 	$$ = astree_create(AST_PROGRAM, $1, $2, NULL, NULL, NULL);
-	astree_print($$,0);
+	astree_root = $$;
 }
 				|								{$$ = NULL;}
 ;
@@ -222,7 +222,7 @@ flow_ctrl	:	KW_WHEN '(' expr ')' KW_THEN command	{
 	$$ = astree_create(AST_CMD_WHEN, $3, $6, NULL, NULL, NULL);
 }
 			|	KW_WHEN '(' expr ')' KW_THEN command KW_ELSE command	{
-	$$ = astree_create(AST_CMD_WHEN, $3, $6, $8, NULL, NULL);
+	$$ = astree_create(AST_CMD_WHEN_ELSE, $3, $6, $8, NULL, NULL);
 }
 			| 	KW_WHILE '(' expr ')' command	{
 	$$ = astree_create(AST_CMD_WHILE, $3, $5, NULL, NULL, NULL);

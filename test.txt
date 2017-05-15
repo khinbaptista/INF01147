@@ -21,7 +21,7 @@ long main() {
 		print i " " "coisas";
 	d = (a + 3);
 	d = asd(2 + 4);
-	
+
 	print " Digite um numero: \n";
 	read i;
 	while (i<10) {
@@ -44,4 +44,3 @@ long incn (long x, long n)
 	return x+n;
 
 short voidfunc() ;
-
