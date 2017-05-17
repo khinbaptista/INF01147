@@ -72,8 +72,9 @@
 %left OPERATOR_AND
 %left OPERATOR_OR
 %left '<' '>' OPERATOR_EQ OPERATOR_NE OPERATOR_GE OPERATOR_LE
-%left '+' '-'
 %left '*' '/'
+%left '+' '-'
+%left '='
 
 %start global_decl_set
 
@@ -280,7 +281,7 @@ expr	:	'(' expr ')'	{
 }
 		|	'-' expr	{
 	$$ = astree_create(AST_EXPR_NEGATIVE, $2, NULL, NULL, NULL, NULL);
-}	%prec  '-'
+}	%prec  '*'
 		| 	expr_arg	{ $$ = $1; }
 ;
 
