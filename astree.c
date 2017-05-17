@@ -145,8 +145,9 @@ void astree_write_code(FILE* file, ASTree* node) {
 				astree_write_code(file, node->children[0]);
 			}
 			if (node->children[1]) {
-				astree_write_code(file, node->children[1]); fprintf(file, ";\n");
+				astree_write_code(file, node->children[1]);
 			}
+			fprintf(file, ";\n");
 			break;
 		case AST_CMD_VAR_ATTR:
 			assert(node->children[0] && node->children[1]);
