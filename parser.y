@@ -68,6 +68,10 @@
 
 %token TOKEN_ERROR
 
+%left '!'
+%left OPERATOR_AND
+%left OPERATOR_OR
+%left '<' '>' OPERATOR_EQ OPERATOR_NE OPERATOR_GE OPERATOR_LE
 %left '+' '-'
 %left '*' '/'
 
