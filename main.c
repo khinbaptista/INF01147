@@ -13,6 +13,8 @@
 extern FILE* yyin;
 void yyparse(void);
 
+int semantic_error_flag = 0;
+
 int main(int argc, char* argv[]) {
 	initMe();
 
@@ -31,8 +33,14 @@ int main(int argc, char* argv[]) {
 
 	yyparse();
 	fclose(input);
-	printf("\n==== No syntax errors found. ====\n\n");
-
+	//printf("\n==== No syntax errors found. ====\n\n");
+	if(semantic_error_flag == 0) {
+		printf("\n==== Parsing and semantic checks sucessful. ====\n\n");
+	}
+	else {
+		printf("\n==== Semantic errors. Exiting... ====\n\n");
+		exit(4);
+	}
 	//astree_print(astree_root);
 	//printf("Hash table contents: \n");
 	//hash_print();

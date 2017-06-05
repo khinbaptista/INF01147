@@ -9,6 +9,8 @@
 #include <string.h>
 #include "hash.h"
 
+extern int semantic_error_flag;
+
 void hash_init() {
 	int i;
 	for (i = 0; i < HASH_SIZE; i++) {
@@ -51,6 +53,28 @@ HashNode* hash_insert(int type, char* text) {
 
 	node = calloc(1, sizeof(HashNode));
 	node->type = type;
+	switch(type) {
+		case SYMBOL_TK_IDENTIFIER:
+			node->id_type = ID_UNDEFINED;
+			node->datatype = HASH_TYPE_UNDEFINED;
+			break;
+		case SYMBOL_LIT_INTEGER:
+			node->id_type = ID_UNDEFINED;
+			node->datatype = HASH_TYPE_SHORT;
+			break;
+		case SYMBOL_LIT_REAL:
+			node->id_type = ID_UNDEFINED;
+			node->datatype = HASH_TYPE_FLOAT;
+			break;
+		case SYMBOL_LIT_CHAR:
+			node->id_type = ID_UNDEFINED;
+			node->datatype = HASH_TYPE_BYTE;
+			break;
+		case SYMBOL_LIT_STRING:
+			node->id_type = ID_UNDEFINED;
+			node->datatype = HASH_TYPE_UNDEFINED;
+			break;
+	}
 	node->text = calloc(strlen(text) + 1, sizeof(char));
 	strcpy(node->text, text);
 
@@ -67,4 +91,14 @@ void hash_print() {
 			fprintf(stderr, "Hash[ %d ] =\t%s\n", i, _table[i]->text);
 		}
 	}
+}
+
+void hash_declare(int datatype, int id_type, HashNode* symbol) {
+	fprintf(stderr, "\nDeclaring %s", symbol->text);
+	if(symbol->datatype != HASH_TYPE_UNDEFINED) {
+		fprintf(stderr, "\nIdentifier %s already declared. \n", symbol->text);
+		semantic_error_flag = 1;
+	}
+	symbol->datatype = datatype;
+	symbol->id_type = id_type;
 }

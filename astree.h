@@ -59,14 +59,29 @@ enum tree_types {	// types
 
 };
 
+enum ast_datatypes {
+	AST_DATATYPE_UNDEFINED,
+	AST_DATATYPE_PROGRAM,
+	AST_DATATYPE_COMMAND,
+	AST_DATATYPE_TYPE,
+	AST_DATATYPE_BYTE,
+	AST_DATATYPE_SHORT,
+	AST_DATATYPE_LONG,
+	AST_DATATYPE_FLOAT,
+	AST_DATATYPE_DOUBLE,
+	AST_DATATYPE_BOOL
+};
+
 typedef struct astree {
 	int type;
+	int datatype;
 	struct astree* children[ MAX_CHILDREN ];
 	HashNode* symbol;
 } ASTree;
 
 ASTree* astree_create(
 	int type,
+	int datatype,
 	ASTree* child1,
 	ASTree* child2,
 	ASTree* child3,

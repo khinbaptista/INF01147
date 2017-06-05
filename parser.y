@@ -3,8 +3,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "lang171.h"	// getLineNumber()
-#include "astree.h"
 #include "hash.h"
+#include "astree.h"
 
 %}
 
