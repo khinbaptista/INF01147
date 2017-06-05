@@ -1,4 +1,5 @@
 #include "astree.h"
+#include "lang171.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <assert.h>
@@ -363,7 +364,7 @@ ASTree* ast_literal(HashNode* symbol) {
 ASTree* ast_identifier(HashNode* symbol) {
 	int datatype = datatype_hash_to_ast(symbol->datatype);
 	if(datatype == AST_DATATYPE_UNDEFINED) {
-		fprintf(stderr,"\nERROR: Identifier %s undeclared.\n", symbol->text);
+		fprintf(stderr,"\nERROR at %d: Identifier %s undeclared.\n", getLineNumber(), symbol->text);
 		semantic_error_flag = 1;
 	}
 	return astree_create(AST_IDENTIFIER, datatype, NULL, NULL, NULL, NULL, symbol);
@@ -495,6 +496,18 @@ ASTree* ast_unary_op(int type, ASTree* operand) {
 	return astree_create(type, AST_DATATYPE_UNDEFINED, operand, NULL, NULL, NULL, NULL);
 }
 
+ASTree* ast_expr_scalar(ASTree* var) {
+	if(var->symbol->id_type != ID_SCALAR && var->symbol->id_type != ID_UNDEFINED) {
+		fprintf(stderr, "\nERROR at %d: identifier %s is not a scalar.\n", getLineNumber(), var->symbol->text);
+		semantic_error_flag = 1;
+	}
+	return var;
+}
+
 ASTree* ast_expr_array_access(ASTree* name, ASTree* index) {
+	if(name->symbol->id_type != ID_ARRAY && name->symbol->id_type != ID_UNDEFINED) {
+		fprintf(stderr, "\nERROR at %d: identifier %s is not an array.\n", getLineNumber(), name->symbol->text);
+		semantic_error_flag = 1;
+	}
 	return astree_create(AST_EXPR_ARRAY_ACCESS, AST_DATATYPE_UNDEFINED, name, index, NULL, NULL, NULL);
 }

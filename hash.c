@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "lang171.h"
 #include "hash.h"
 
 extern int semantic_error_flag;
@@ -96,7 +97,7 @@ void hash_print() {
 
 void hash_declare(int datatype, int id_type, HashNode* symbol) {
 	if(symbol->datatype != HASH_TYPE_UNDEFINED) {
-		fprintf(stderr, "\nERROR: Redeclaration of identifier %s.\n", symbol->text);
+		fprintf(stderr, "\nERROR at %d: Redeclaration of identifier %s.\n", getLineNumber(), symbol->text);
 		semantic_error_flag = 1;
 	} else {
 		// fprintf(stderr, "\nDeclaring identifier %s", symbol->text);

@@ -182,7 +182,7 @@ flow_ctrl :	KW_WHEN '(' expr ')' KW_THEN command { $$ = ast_cmd_when($3, $6); }
 |	KW_FOR '(' identifier '=' expr KW_TO expr ')' command { $$ = ast_cmd_for($3, $5, $7, $9); }
 ;
 
-expr	:	'(' expr ')'	{ $$ = ast_expr_parens($2); }
+expr : '(' expr ')'	{ $$ = ast_expr_parens($2); }
 |	expr '+' expr	{ $$ = ast_op(AST_EXPR_SUM, $1, $3); }
 |	expr '-' expr	{ $$ = ast_op(AST_EXPR_SUB, $1, $3); }
 |	expr '*' expr	{ $$ = ast_op(AST_EXPR_MULT, $1, $3); }
@@ -200,7 +200,7 @@ expr	:	'(' expr ')'	{ $$ = ast_expr_parens($2); }
 | 	expr_arg	{ $$ = $1; }
 ;
 
-expr_arg : identifier	{ $$ = $1; }
+expr_arg : identifier	{ $$ = ast_expr_scalar($1); }
 |	identifier'['expr']'	{ $$ = ast_expr_array_access($1, $3); }
 |	func_call		{ $$ = $1; }
 |	literal			{ $$ = $1; }

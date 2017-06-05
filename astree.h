@@ -127,3 +127,4 @@ ASTree* ast_expr_parens(ASTree* expression);
 ASTree* ast_op(int type, ASTree* left, ASTree* right);
 ASTree* ast_unary_op(int type, ASTree* operand);
 ASTree* ast_expr_array_access(ASTree* name, ASTree* index);
+ASTree* ast_expr_scalar(ASTree* var);
