@@ -32,28 +32,23 @@
 "&&"                            { return OPERATOR_AND; }
 \|\|                            { return OPERATOR_OR; }
 [_a-zA-Z][_a-zA-Z0-9]*          {
-	yylval.tree = astree_create(AST_IDENTIFIER, NULL, NULL, NULL, NULL,
-		hash_insert(SYMBOL_TK_IDENTIFIER, yytext));
+	yylval.symbol = hash_insert(SYMBOL_TK_IDENTIFIER, yytext);
 	return TK_IDENTIFIER;
 }
 [0-9]+                          {
-	yylval.tree = astree_create(AST_LITERAL, NULL, NULL, NULL, NULL,
-	 	hash_insert(SYMBOL_LIT_INTEGER, yytext));
+	yylval.symbol = hash_insert(SYMBOL_LIT_INTEGER, yytext);
 	return LIT_INTEGER;
 }
 [0-9]+\.[0-9]+                  {
-	yylval.tree = astree_create(AST_LITERAL, NULL, NULL, NULL, NULL,
-		hash_insert(SYMBOL_LIT_REAL, yytext));
+	yylval.symbol = hash_insert(SYMBOL_LIT_REAL, yytext);
 	return LIT_REAL;
 }
 "'"."'"                         {
-	yylval.tree = astree_create(AST_LITERAL, NULL, NULL, NULL, NULL,
-		hash_insert(SYMBOL_LIT_CHAR, yytext));
+	yylval.symbol = hash_insert(SYMBOL_LIT_CHAR, yytext);
 	return LIT_CHAR;
 }
 \"(\\.|[^\"\n])*\"              {
-	yylval.tree = astree_create(AST_LITERAL, NULL, NULL, NULL, NULL,
-		hash_insert(SYMBOL_LIT_STRING, yytext));
+	yylval.symbol = hash_insert(SYMBOL_LIT_STRING, yytext);
 	return LIT_STRING;
 }
 [-,;:\(\)\[\]\{\}+*/<>=!&$#]    { return yytext[0]; }

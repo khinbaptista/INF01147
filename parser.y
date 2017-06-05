@@ -10,9 +10,11 @@
 
 %union {
 	ASTree* tree;
+	HashNode* symbol;
 }
 
 %type <tree> type
+%type <tree> identifier
 %type <tree> literal
 %type <tree> global_decl_set
 %type <tree> global_decl
@@ -60,11 +62,11 @@
 %token OPERATOR_AND
 %token OPERATOR_OR
 
-%token <tree>TK_IDENTIFIER
-%token <tree>LIT_INTEGER
-%token <tree>LIT_REAL
-%token <tree>LIT_CHAR
-%token <tree>LIT_STRING
+%token <symbol>TK_IDENTIFIER
+%token <symbol>LIT_INTEGER
+%token <symbol>LIT_REAL
+%token <symbol>LIT_CHAR
+%token <symbol>LIT_STRING
 
 %token TOKEN_ERROR
 
@@ -82,215 +84,126 @@
 
 %%
 
-type	:	KW_BYTE		{
-	$$ = astree_create(AST_TYPE_BYTE, NULL, NULL, NULL, NULL, NULL);
-}
-		|	KW_SHORT	{
-	$$ = astree_create(AST_TYPE_SHORT, NULL, NULL, NULL, NULL, NULL);
-}
-		|	KW_LONG		{
-	$$ = astree_create(AST_TYPE_LONG, NULL, NULL, NULL, NULL, NULL);
-}
-		|	KW_FLOAT	{
-	$$ = astree_create(AST_TYPE_FLOAT, NULL, NULL, NULL, NULL, NULL);
-}
-		|	KW_DOUBLE	{
-	$$ = astree_create(AST_TYPE_DOUBLE, NULL, NULL, NULL, NULL, NULL);
-}
+type	:	KW_BYTE		{ $$ = ast_type_byte(); }
+| KW_SHORT				{ $$ = ast_type_short();}
+| KW_LONG				{ $$ = ast_type_long(); }
+| KW_FLOAT				{ $$ = ast_type_float(); }
+| KW_DOUBLE				{ $$ = ast_type_double(); }
 ;
 
-literal	:	LIT_INTEGER
-		|	LIT_REAL
-		|	LIT_CHAR
+identifier : TK_IDENTIFIER { $$ = ast_identifier($1);}
+
+literal	: LIT_INTEGER { $$ = ast_literal($1);}
+| LIT_REAL			  { $$ = ast_literal($1);}
+| LIT_CHAR			  { $$ = ast_literal($1);}
 ;
 
-global_decl_set	: 	global_decl global_decl_set {
-	$$ = astree_create(AST_PROGRAM, $1, $2, NULL, NULL, NULL);
-	astree_root = $$;
-}
-				|								{$$ = NULL;}
+global_decl_set	: global_decl global_decl_set { $$ = ast_program($1, $2); astree_root = $$; }
+| 	{$$ = NULL;}
 ;
 
-global_decl	:	func_decl ';'					{$$ = $1;}
-			|	var_decl ';'					{$$ = $1;}
+global_decl	: func_decl ';' { $$ = $1; }
+| var_decl ';'				{ $$ = $1; }
 ;
 
-var_decl	:	TK_IDENTIFIER ':' type literal	{
-	$$ = astree_create(AST_VAR_DECL, $1, $3, $4, NULL, NULL);
-}
-			|	TK_IDENTIFIER ':' type'['LIT_INTEGER']' array_init 	{
-	$$ = astree_create(AST_ARRAY_DECL, $1, $3, $5, $7, NULL);
-}
+var_decl :	identifier ':' type literal	{ $$ = ast_var_decl($1, $3, $4); }
+| identifier ':' type'['LIT_INTEGER']' array_init 	{ $$ = ast_array_decl($1, $3, $5, $7); }
 ;
 
-array_init	:	literal array_init {
-	$$ = astree_create(AST_ARRAY_INIT, $1, $2, NULL, NULL, NULL);
-}
-			|		{ $$ = NULL; }
+array_init : literal array_init { $$ = ast_array_init($1, $2); }
+|					   			{ $$ = NULL; }
 ;
 
-func_decl	:	type TK_IDENTIFIER '(' params_list ')' command {
-	$$ = astree_create(AST_FUNC_DECL, $1, $2, $4, $6, NULL);
-}
+func_decl :	type identifier '(' params_list ')' command { $$ =   ast_func_decl($1, $2, $4, $6); }
 ;
 
-params_list	:	params	{ $$ = $1; }
-			|			{ $$ = NULL; }
+params_list	: params	{ $$ = $1; }
+|						{ $$ = NULL; }
 ;
 
-params	:	params ',' param	{
-	$$ = astree_create(AST_FUNC_PARAMS_LIST, $1, $3, NULL, NULL, NULL);
-}
-		|	param 			{
-	$$ = astree_create(AST_FUNC_PARAMS_LIST, $1, NULL, NULL, NULL, NULL);
-}
+params : params ',' param	{ $$ = ast_func_params_list($1, $3); }
+| param 					{ $$ = ast_func_params_list($1, NULL); }
 ;
 
-param	:	type TK_IDENTIFIER {
-	$$ = astree_create(AST_FUNC_PARAM, $1, $2, NULL, NULL, NULL);
-}
+param :	type identifier { $$ = ast_func_param($1, $2); }
 ;
 
-func_call	:	TK_IDENTIFIER '(' args_list ')' {
-	$$ = astree_create(AST_FUNC_CALL, $1, $3, NULL, NULL, NULL);
-}
+func_call :	identifier '(' args_list ')' { $$ = ast_func_call($1, $3);}
 ;
 
-args_list	:	args	{ $$ = $1; }
-			|			{ $$ = NULL; }
+args_list :	args	{ $$ = $1; }
+| 					{ $$ = NULL; }
 ;
 
-args	:	args ',' arg	{
-	$$ = astree_create(AST_FUNC_ARGS_LIST, $1, $3, NULL, NULL, NULL);
-}
-		|	arg		{
-	$$ = astree_create(AST_FUNC_ARGS_LIST, $1, NULL, NULL, NULL, NULL);
-}
+args : args ',' arg	{ $$ = ast_func_args_list($1, $3); }
+| arg 				{ $$ = ast_func_args_list($1, NULL); }
 ;
 
-arg	:	expr
+arg	: expr
 ;
 
-command	:	command_block
-		|	command_single
+command	: command_block
+| command_single
 ;
 
-command_block	:	'{' command_seq '}' {
-	$$ = astree_create(AST_CMD_BLOCK, $2, NULL, NULL, NULL, NULL);
-}
+command_block :	'{' command_seq '}' { $$ = ast_cmd_block($2); }
 ;
 
-command_seq	:	command_seq command ';'	{
-	$$ = astree_create(AST_CMD_LIST, $1, $2, NULL, NULL, NULL);
-}
-			|		{ $$ = NULL; }
+command_seq	: command_seq command ';' { $$ = ast_cmd_list($1, $2); }
+| 									  { $$ = NULL; }
 ;
 
-command_single	:	var_attr		{ $$ = $1; }
-				|	flow_ctrl		{ $$ = $1; }
-				|	basic_command	{ $$ = $1; }
-				|					{ $$ = NULL; }
+command_single : var_attr		{ $$ = $1; }
+| flow_ctrl		{ $$ = $1; }
+| basic_command	{ $$ = $1; }
+| 				{ $$ = NULL; }
 ;
 
-var_attr	:	TK_IDENTIFIER '=' expr	{
-	$$ = astree_create(AST_CMD_VAR_ATTR, $1, $3, NULL, NULL, NULL);
-}
-			|	TK_IDENTIFIER '#' expr '=' expr	{
-	$$ = astree_create(AST_CMD_ARRAY_ATTR, $1, $3, $5, NULL, NULL);
-}
+var_attr :	identifier '=' expr	{ $$ = ast_cmd_var_attr($1, $3); }
+|	identifier '#' expr '=' expr {$$ = ast_cmd_array_attr($1, $3, $5);}
 ;
 
-basic_command	:	KW_READ TK_IDENTIFIER	{
-	$$ = astree_create(AST_CMD_READ, $2, NULL, NULL, NULL, NULL);
-}
-				| 	KW_PRINT print_args		{
-	$$ = astree_create(AST_CMD_PRINT, $2, NULL, NULL, NULL, NULL);
-}
-				| 	KW_RETURN expr			{
-	$$ = astree_create(AST_CMD_RETURN, $2, NULL, NULL, NULL, NULL);
-}
+basic_command :	KW_READ identifier	{ $$ = ast_cmd_read($2); }
+| KW_PRINT print_args { $$ = ast_cmd_print($2); }
+| KW_RETURN expr		{ $$ = ast_cmd_return($2); }
 ;
 
-print_args	:	print_args print_arg {
-	$$ = astree_create(AST_PRINT_ARGS, $1, $2, NULL, NULL, NULL);
-}
-			|	print_arg	{
-	$$ = astree_create(AST_PRINT_ARGS, $1, NULL, NULL, NULL, NULL);
-}
+print_args : print_args print_arg { $$ = ast_print_args($1, $2); }
+| print_arg	{ $$ = ast_print_args($1, NULL); }
 ;
 
-print_arg	:	LIT_STRING
-			|	expr
+print_arg :	LIT_STRING	{ $$ = ast_literal($1);}
+| expr { $$ = $1;}
 ;
 
-flow_ctrl	:	KW_WHEN '(' expr ')' KW_THEN command	{
-	$$ = astree_create(AST_CMD_WHEN, $3, $6, NULL, NULL, NULL);
-}
-			|	KW_WHEN '(' expr ')' KW_THEN command KW_ELSE command	{
-	$$ = astree_create(AST_CMD_WHEN_ELSE, $3, $6, $8, NULL, NULL);
-}
-			| 	KW_WHILE '(' expr ')' command	{
-	$$ = astree_create(AST_CMD_WHILE, $3, $5, NULL, NULL, NULL);
-}
-			|	KW_FOR '(' TK_IDENTIFIER '=' expr KW_TO expr ')' command	{
-	$$ = astree_create(AST_CMD_FOR, $3, $5, $7, $9, NULL);
-}
+flow_ctrl :	KW_WHEN '(' expr ')' KW_THEN command { $$ = ast_cmd_when($3, $6); }
+|	KW_WHEN '(' expr ')' KW_THEN command KW_ELSE command { $$ = ast_cmd_when_else($3, $6, $8); }
+| 	KW_WHILE '(' expr ')' command	{ $$ = ast_cmd_while($3, $5); }
+|	KW_FOR '(' identifier '=' expr KW_TO expr ')' command { $$ = ast_cmd_for($3, $5, $7, $9); }
 ;
 
-expr	:	'(' expr ')'	{
-	$$ = astree_create(AST_EXPR_PARENS, $2, NULL, NULL, NULL, NULL);
-}
-		|	expr '+' expr	{
-	$$ = astree_create(AST_EXPR_SUM, $1, $3, NULL, NULL, NULL);
-}
-		|	expr '-' expr	{
-	$$ = astree_create(AST_EXPR_SUB, $1, $3, NULL, NULL, NULL);
-}
-		|	expr '*' expr	{
-	$$ = astree_create(AST_EXPR_MULT, $1, $3, NULL, NULL, NULL);
-}
-		|	expr '/' expr	{
-	$$ = astree_create(AST_EXPR_DIV, $1, $3, NULL, NULL, NULL);
-}
-		|	expr '<' expr	{
-	$$ = astree_create(AST_EXPR_LESSER, $1, $3, NULL, NULL, NULL);
-}
-		|	expr '>' expr	{
-	$$ = astree_create(AST_EXPR_GREATER, $1, $3, NULL, NULL, NULL);
-}
-		|	expr OPERATOR_LE expr	{
-	$$ = astree_create(AST_EXPR_LESSER_EQ, $1, $3, NULL, NULL, NULL);
-}
-		|	expr OPERATOR_GE expr	{
-	$$ = astree_create(AST_EXPR_GREATER_EQ, $1, $3, NULL, NULL, NULL);
-}
-		|	expr OPERATOR_EQ expr	{
-	$$ = astree_create(AST_EXPR_EQUAL, $1, $3, NULL, NULL, NULL);
-}
-		|	expr OPERATOR_NE expr	{
-	$$ = astree_create(AST_EXPR_NOT_EQUAL, $1, $3, NULL, NULL, NULL);
-}
-		|	expr OPERATOR_OR expr	{
-	$$ = astree_create(AST_EXPR_OR, $1, $3, NULL, NULL, NULL);
-}
-		|	expr OPERATOR_AND expr	{
-	$$ = astree_create(AST_EXPR_AND, $1, $3, NULL, NULL, NULL);
-}
-		|	'!' expr	{
-	$$ = astree_create(AST_EXPR_NOT, $2, NULL, NULL, NULL, NULL);
-}
-		|	'-' expr	{
-	$$ = astree_create(AST_EXPR_NEGATIVE, $2, NULL, NULL, NULL, NULL);
-}	%prec  '*'
-		| 	expr_arg	{ $$ = $1; }
+expr	:	'(' expr ')'	{ $$ = ast_expr_parens($2); }
+|	expr '+' expr	{ $$ = ast_op(AST_EXPR_SUM, $1, $3); }
+|	expr '-' expr	{ $$ = ast_op(AST_EXPR_SUB, $1, $3); }
+|	expr '*' expr	{ $$ = ast_op(AST_EXPR_MULT, $1, $3); }
+|	expr '/' expr	{ $$ = ast_op(AST_EXPR_DIV, $1, $3); }
+|	expr '<' expr	{ $$ = ast_op(AST_EXPR_LESSER, $1, $3); }
+|	expr '>' expr	{ $$ = ast_op(AST_EXPR_GREATER, $1, $3); }
+|	expr OPERATOR_LE expr { $$ = ast_op(AST_EXPR_LESSER_EQ, $1, $3); }
+|	expr OPERATOR_GE expr { $$ = ast_op(AST_EXPR_GREATER_EQ, $1, $3); }
+|	expr OPERATOR_EQ expr { $$ = ast_op(AST_EXPR_EQUAL, $1, $3); }
+|	expr OPERATOR_NE expr { $$ = ast_op(AST_EXPR_NOT_EQUAL, $1, $3); }
+|	expr OPERATOR_OR expr { $$ = ast_op(AST_EXPR_OR, $1, $3); }
+|	expr OPERATOR_AND expr	{ $$ = ast_op(AST_EXPR_AND, $1, $3); }
+|	'!' expr { $$ = ast_unary_op(AST_EXPR_NOT, $2); }
+|	'-' expr { $$ = ast_unary_op(AST_EXPR_NEGATIVE, $2); }	%prec  '*'
+| 	expr_arg	{ $$ = $1; }
 ;
 
-expr_arg	:	TK_IDENTIFIER	{ $$ = $1; }
-			|	TK_IDENTIFIER'['expr']'	{
-	$$ = astree_create(AST_EXPR_ARRAY_ACCESS, $1, $3, NULL, NULL, NULL);
-}
-			|	func_call		{ $$ = $1; }
-			|	literal			{ $$ = $1; }
+expr_arg : identifier	{ $$ = $1; }
+|	identifier'['expr']'	{ $$ = ast_expr_array_access($1, $3); }
+|	func_call		{ $$ = $1; }
+|	literal			{ $$ = $1; }
 ;
 
 %%
