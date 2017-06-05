@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <assert.h>
 
+extern int semantic_error_flag;
+
 ASTree* astree_create(
 	int type,
 	int datatype,
@@ -359,8 +361,11 @@ ASTree* ast_literal(HashNode* symbol) {
 }
 
 ASTree* ast_identifier(HashNode* symbol) {
-	// Check if identifier is not undeclared
 	int datatype = datatype_hash_to_ast(symbol->datatype);
+	if(datatype == AST_DATATYPE_UNDEFINED) {
+		fprintf(stderr,"\nERROR: Identifier %s undeclared.\n", symbol->text);
+		semantic_error_flag = 1;
+	}
 	return astree_create(AST_IDENTIFIER, datatype, NULL, NULL, NULL, NULL, symbol);
 }
 
@@ -388,14 +393,16 @@ ASTree* ast_program(ASTree* decl, ASTree* decl_set) {
 	return astree_create(AST_PROGRAM, AST_DATATYPE_PROGRAM, decl, decl_set, NULL, NULL, NULL);
 }
 
-ASTree* ast_var_decl(ASTree* identifier, ASTree* type, ASTree* literal) {
+ASTree* ast_var_decl(HashNode* name, ASTree* type, ASTree* literal) {
 	int var_type = datatype_ast_to_hash(type->type);
-	hash_declare(var_type, ID_SCALAR, identifier->symbol);
+	ASTree* identifier = astree_create(AST_IDENTIFIER, var_type, NULL, NULL, NULL, NULL, name);
+	hash_declare(var_type, ID_SCALAR, name);
 	return astree_create(AST_VAR_DECL, AST_DATATYPE_COMMAND, identifier, type, literal, NULL, NULL);
 }
 
-ASTree* ast_array_decl(ASTree* identifier, ASTree*  type, HashNode* array_size, ASTree*  array_init) {
+ASTree* ast_array_decl(HashNode* name, ASTree*  type, HashNode* array_size, ASTree*  array_init) {
 	int var_type = datatype_ast_to_hash(type->type);
+	ASTree* identifier = astree_create(AST_IDENTIFIER, var_type, NULL, NULL, NULL, NULL, name);
 	hash_declare(var_type, ID_ARRAY, identifier->symbol);
 	return astree_create(AST_ARRAY_DECL, AST_DATATYPE_UNDEFINED, identifier, type, ast_literal(array_size), array_init, NULL);
 }
@@ -404,9 +411,11 @@ ASTree* ast_array_init(ASTree* literal, ASTree* array_init) {
 	return astree_create(AST_ARRAY_INIT, AST_DATATYPE_UNDEFINED, literal, array_init, NULL, NULL, NULL);
 }
 
-ASTree* ast_func_decl(ASTree* type, ASTree* name, ASTree* params_list, ASTree* command) {
-	// Add pointer to params list to hashtable
-	return astree_create(AST_FUNC_DECL, AST_DATATYPE_UNDEFINED, type, name, params_list, command, NULL);
+ASTree* ast_func_decl(ASTree* type, HashNode* name, ASTree* params_list, ASTree* command) {
+	int return_type = datatype_ast_to_hash(type->type);
+	ASTree* identifier = astree_create(AST_IDENTIFIER, return_type, NULL, NULL, NULL, NULL, name);
+	hash_declare_function(return_type, name, params_list);
+	return astree_create(AST_FUNC_DECL, AST_DATATYPE_UNDEFINED, type, identifier, params_list, command, NULL);
 }
 
 ASTree* ast_func_params_list(ASTree* list, ASTree* param) {

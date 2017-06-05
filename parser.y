@@ -106,15 +106,15 @@ global_decl	: func_decl ';' { $$ = $1; }
 | var_decl ';'				{ $$ = $1; }
 ;
 
-var_decl :	identifier ':' type literal	{ $$ = ast_var_decl($1, $3, $4); }
-| identifier ':' type'['LIT_INTEGER']' array_init 	{ $$ = ast_array_decl($1, $3, $5, $7); }
+var_decl :	TK_IDENTIFIER ':' type literal	{ $$ = ast_var_decl($1, $3, $4); }
+| TK_IDENTIFIER ':' type'['LIT_INTEGER']' array_init 	{ $$ = ast_array_decl($1, $3, $5, $7); }
 ;
 
 array_init : literal array_init { $$ = ast_array_init($1, $2); }
 |					   			{ $$ = NULL; }
 ;
 
-func_decl :	type identifier '(' params_list ')' command { $$ =   ast_func_decl($1, $2, $4, $6); }
+func_decl :	type TK_IDENTIFIER '(' params_list ')' command { $$ =   ast_func_decl($1, $2, $4, $6); }
 ;
 
 params_list	: params	{ $$ = $1; }

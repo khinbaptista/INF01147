@@ -8,6 +8,8 @@
 
 #define HASH_SIZE 997
 
+struct astree;
+
 enum hash_symbol_type {
 	SYMBOL_TK_IDENTIFIER,
 	SYMBOL_LIT_INTEGER,
@@ -36,6 +38,7 @@ typedef struct hash_node {
 	int type;
 	int id_type;
 	int datatype;
+	struct astree* function_params;
 	char *text;
 	struct hash_node* next;
 } HashNode;
@@ -47,5 +50,6 @@ int hash_address(char* text);
 HashNode* hash_find(char* text);
 HashNode* hash_insert(int type, char* text);
 void hash_declare(int datatype, int id_type, HashNode* symbol);
+void hash_declare_function(int datatype, HashNode* symbol, struct astree* params);
 
 void hash_print();
