@@ -46,3 +46,5 @@ long incn (long x, long n)
 	return x+n;
 
 short voidfunc() ;
+
+b: byte '1';

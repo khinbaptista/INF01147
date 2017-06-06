@@ -200,7 +200,7 @@ expr : '(' expr ')'	{ $$ = ast_expr_parens($2); }
 | 	expr_arg	{ $$ = $1; }
 ;
 
-expr_arg : identifier	{ $$ = ast_expr_scalar($1); }
+expr_arg : identifier	{ $$ = ast_expr_scalar_access($1); }
 |	identifier'['expr']'	{ $$ = ast_expr_array_access($1, $3); }
 |	func_call		{ $$ = $1; }
 |	literal			{ $$ = $1; }

@@ -9,11 +9,10 @@
 #include "hash.h"
 #include "astree.h"
 #include "lang171.h"
+#include "semantics.h"
 
 extern FILE* yyin;
 void yyparse(void);
-
-int semantic_error_flag = 0;
 
 int main(int argc, char* argv[]) {
 	initMe();
@@ -33,8 +32,10 @@ int main(int argc, char* argv[]) {
 
 	yyparse();
 	fclose(input);
-	//printf("\n==== No syntax errors found. ====\n\n");
-	if(semantic_error_flag == 0) {
+	printf("\n==== No syntax errors found. ====\n\n");
+	semantics_check(astree_root);
+	printf("\nFinished semantic check.\n");
+	if(!semantic_errors_found()) {
 		printf("\n==== Parsing and semantic checks sucessful. ====\n\n");
 	}
 	else {
@@ -49,7 +50,7 @@ int main(int argc, char* argv[]) {
 		FILE *output = fopen(argv[2], "w");
 		if (output == NULL) {
 			fprintf(stderr, "Could not open output file '%s'", argv[2]);
-			exit(4);
+			exit(5);
 		}
 
 		astree_write_code(output, astree_root);

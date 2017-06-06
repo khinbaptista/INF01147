@@ -55,6 +55,7 @@ enum tree_types {	// types
 	AST_EXPR_AND,
 	AST_EXPR_NOT,
 	AST_EXPR_NEGATIVE,
+	AST_EXPR_SCALAR_ACCESS,
 	AST_EXPR_ARRAY_ACCESS
 
 };
@@ -75,13 +76,13 @@ enum ast_datatypes {
 typedef struct astree {
 	int type;
 	int datatype;
+	int line;
 	struct astree* children[ MAX_CHILDREN ];
 	HashNode* symbol;
 } ASTree;
 
 ASTree* astree_create(
 	int type,
-	int datatype,
 	ASTree* child1,
 	ASTree* child2,
 	ASTree* child3,
@@ -94,6 +95,9 @@ ASTree* astree_root;
 void astree_print(ASTree* root, int level);
 
 void astree_write_code(FILE* file, ASTree* node);
+
+int datatype_ast_to_hash(int ast_type);
+int datatype_hash_to_ast(int hash_type);
 
 ASTree* ast_literal(HashNode* symbol);
 ASTree* ast_identifier(HashNode* symbol);
@@ -126,5 +130,5 @@ ASTree* ast_cmd_for(ASTree* var, ASTree* start, ASTree* end, ASTree* command);
 ASTree* ast_expr_parens(ASTree* expression);
 ASTree* ast_op(int type, ASTree* left, ASTree* right);
 ASTree* ast_unary_op(int type, ASTree* operand);
+ASTree* ast_expr_scalar_access(ASTree* var);
 ASTree* ast_expr_array_access(ASTree* name, ASTree* index);
-ASTree* ast_expr_scalar(ASTree* var);
