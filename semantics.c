@@ -41,18 +41,44 @@ void declare_function(int datatype, HashNode* symbol, struct astree* params) {
 	symbol->function_params = params;
 }
 
-ASTree* semantics_check(ASTree* node) {
-    if(!node) {
-        return NULL;
+int numeric_datatype(int type) {
+    return type >= AST_DATATYPE_BYTE;
+}
+
+int get_operation_datatype(int left, int right) {
+    if(numeric_datatype(left) && numeric_datatype(right)) {
+        // Datatypes are an enum, larger values have more bits/precision
+        if(left >= right) {
+            return left;
+        } else {
+            return right;
+        }
+    } else {
+        return AST_DATATYPE_BYTE;
     }
+}
+
+void semantics_check(ASTree* node) {
+    if(!node) {
+        return;
+    }
+    // Check children recursively before checking node.
+    semantics_check(node->children[0]);
+    semantics_check(node->children[1]);
+    semantics_check(node->children[2]);
+    semantics_check(node->children[3]);
     switch(node->type) {
+        case AST_LITERAL:
+            assert(node->symbol);
+            node->datatype = datatype_hash_to_ast(node->symbol->datatype);
+            break;
         case AST_IDENTIFIER:
             assert(node->symbol);
             if(node->symbol->datatype == AST_DATATYPE_UNDEFINED) {
                 semantic_error_var(node->symbol->text, "undeclared.",node);
             }
             node->datatype = datatype_hash_to_ast(node->symbol->datatype);
-            return node;
+            break;
         case AST_EXPR_ARRAY_ACCESS:
             assert(node->children[0]);
             if( node->children[0]->symbol->id_type != ID_ARRAY &&
@@ -60,7 +86,7 @@ ASTree* semantics_check(ASTree* node) {
                 semantic_error_var(node->children[0]->symbol->text, "is not an array.",node);
             }
             node->datatype = datatype_hash_to_ast(node->children[0]->symbol->datatype);
-            return node;
+            break;
         case AST_EXPR_SCALAR_ACCESS:
             assert(node->children[0]);
             if( node->children[0]->symbol->id_type != ID_SCALAR &&
@@ -68,12 +94,97 @@ ASTree* semantics_check(ASTree* node) {
                 semantic_error_var(node->children[0]->symbol->text, "is not a scalar.", node);
             }
             node->datatype = datatype_hash_to_ast(node->children[0]->symbol->datatype);
-            return node;
+            break;
+        case AST_EXPR_PARENS:
+            assert(node->children[0]);
+            node->datatype = node->children[0]->datatype;
+            break;
+        case AST_EXPR_SUM:
+	    case AST_EXPR_SUB:
+	    case AST_EXPR_MULT:
+	    case AST_EXPR_DIV:
+            assert(node->children[0] && node->children[1]);
+            if(! numeric_datatype(node->children[0]->datatype)) {
+                semantic_error("Left hand of math operation is not numeric.", node);
+            }
+            if(! numeric_datatype(node->children[1]->datatype)) {
+                semantic_error("Right hand of math operation is not numeric.", node);
+            }
+            node->datatype = get_operation_datatype(node->children[0]->datatype, node->children[1]->datatype);
+            break;
+        case AST_EXPR_NEGATIVE:
+            assert(node->children[0]);
+            if(! numeric_datatype(node->children[0]->datatype)) {
+                semantic_error("Unary negative applied to non numeric value.", node);
+            }
+            node->datatype = node->children[0]->datatype;
+            break;
+        case AST_EXPR_LESSER:
+	    case AST_EXPR_GREATER:
+	    case AST_EXPR_LESSER_EQ:
+	    case AST_EXPR_GREATER_EQ:
+	    case AST_EXPR_EQUAL:
+	    case AST_EXPR_NOT_EQUAL:
+            assert(node->children[0] && node->children[1]);
+            if(! numeric_datatype(node->children[0]->datatype)) {
+                semantic_error("Left hand of comparison is not numeric.", node);
+            }
+            if(! numeric_datatype(node->children[1]->datatype)) {
+                semantic_error("Right hand of comparison is not numeric.", node);
+            }
+            node->datatype = AST_DATATYPE_BOOL;
+            break;
+	    case AST_EXPR_OR:
+	    case AST_EXPR_AND:
+            assert(node->children[0] && node->children[1]);
+            if(numeric_datatype(node->children[0]->datatype)) {
+                semantic_error("Left hand of logic operator is numeric.", node);
+            }
+            if(numeric_datatype(node->children[1]->datatype)) {
+                semantic_error("Right hand of logic operator is numeric.", node);
+            }
+            node->datatype = AST_DATATYPE_BOOL;
+            break;
+        case AST_EXPR_NOT:
+            assert(node->children[0]);
+            if(node->children[0]->datatype != AST_DATATYPE_BOOL) {
+                semantic_error("Logical NOT applied to non boolean value.", node);
+            }
+            node->datatype = AST_DATATYPE_BOOL;
+            break;
+        case AST_FUNC_CALL:
+            // Check if paramaters match arguments and if id is function
+        case AST_CMD_READ:
+            // Check if scalar or array
+	    case AST_CMD_RETURN:
+            // Check if datatype is numeric
+        case AST_CMD_WHEN:
+	    case AST_CMD_WHEN_ELSE:
+	    case AST_CMD_WHILE:
+            // Check if condition is boolean?
+	    case AST_CMD_FOR:
+            // Check if variable is scalar
+
+	    case AST_TYPE_BYTE:
+	    case AST_TYPE_SHORT:
+	    case AST_TYPE_LONG:
+	    case AST_TYPE_FLOAT:
+	    case AST_TYPE_DOUBLE:
+	    case AST_PROGRAM:
+	    case AST_VAR_DECL:
+	    case AST_ARRAY_DECL:
+	    case AST_ARRAY_INIT:
+	    case AST_FUNC_DECL:
+	    case AST_FUNC_PARAMS_LIST:
+	    case AST_FUNC_PARAM:
+	    case AST_FUNC_ARGS_LIST:
+	    case AST_CMD_LIST:
+	    case AST_CMD_BLOCK:
+	    case AST_CMD_VAR_ATTR:
+	    case AST_CMD_ARRAY_ATTR:
+	    case AST_CMD_PRINT:
+	    case AST_PRINT_ARGS:
         default:
-            semantics_check(node->children[0]);
-            semantics_check(node->children[1]);
-            semantics_check(node->children[2]);
-            semantics_check(node->children[3]);
-            return NULL;
+            break;
     }
 }

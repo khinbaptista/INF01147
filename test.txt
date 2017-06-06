@@ -12,7 +12,9 @@ d: byte 'x';
 byte cc(float d){};
 
 long main() {
+	a = (a>a)-1+2+3+4;
 	a = 10;
+	c = -(a==a);
 	b = -20+c/34.5;
 	c = !20&&2||b+a;
 	h = v + 10;

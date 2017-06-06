@@ -74,7 +74,7 @@ HashNode* hash_insert(int type, char* text) {
 			break;
 		case SYMBOL_LIT_STRING:
 			node->id_type = ID_UNDEFINED;
-			node->datatype = HASH_TYPE_UNDEFINED;
+			node->datatype = HASH_TYPE_STRING;
 			break;
 	}
 	node->text = calloc(strlen(text) + 1, sizeof(char));

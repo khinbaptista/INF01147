@@ -60,17 +60,17 @@ enum tree_types {	// types
 
 };
 
+// ORDER OF ENUM IS IMPORTANT:
+// Larger datatypes have more precision and also a higher enum value
 enum ast_datatypes {
 	AST_DATATYPE_UNDEFINED,
-	AST_DATATYPE_PROGRAM,
-	AST_DATATYPE_COMMAND,
-	AST_DATATYPE_TYPE,
+	AST_DATATYPE_BOOL,
+	AST_DATATYPE_STRING,
 	AST_DATATYPE_BYTE,
 	AST_DATATYPE_SHORT,
 	AST_DATATYPE_LONG,
 	AST_DATATYPE_FLOAT,
-	AST_DATATYPE_DOUBLE,
-	AST_DATATYPE_BOOL
+	AST_DATATYPE_DOUBLE
 };
 
 typedef struct astree {

@@ -347,6 +347,8 @@ int datatype_ast_to_hash(int ast_type) {
 
 int datatype_hash_to_ast(int hash_type) {
 	switch(hash_type) {
+		case HASH_TYPE_STRING:
+			return AST_DATATYPE_STRING;
 		case HASH_TYPE_BYTE:
 			return AST_DATATYPE_BYTE;
 		case HASH_TYPE_SHORT:
