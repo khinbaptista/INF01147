@@ -99,6 +99,8 @@ void astree_write_code(FILE* file, ASTree* node);
 int datatype_ast_to_hash(int ast_type);
 int datatype_hash_to_ast(int hash_type);
 
+int ast_param_list_count(ASTree *params_list);
+
 ASTree* ast_literal(HashNode* symbol);
 ASTree* ast_identifier(HashNode* symbol);
 ASTree* ast_type_byte();

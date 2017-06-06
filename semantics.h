@@ -9,7 +9,7 @@ void semantic_error(char* message, ASTree* node);
 
 void semantic_error_var(char* var, char* message, ASTree* node);
 
-ASTree* semantics_check(ASTree* node);
+void semantics_check(ASTree* node);
 
 void declare_identifier(int datatype, int id_type, HashNode* symbol);
 

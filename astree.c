@@ -364,6 +364,20 @@ int datatype_hash_to_ast(int hash_type) {
 	}
 }
 
+int ast_param_list_count(ASTree* list) {
+	if (list == NULL || list->type != AST_FUNC_PARAMS_LIST) { return 0; }
+
+	ASTree *it = list;
+	int count = 0;
+
+	while (it && it->children[1]) {
+		count++;
+		it = it->children[0];
+	}
+
+	return count;
+}
+
 ASTree* ast_literal(HashNode* symbol) {
 	return astree_create(AST_LITERAL, NULL, NULL, NULL, NULL, symbol);
 }
@@ -426,7 +440,10 @@ ASTree* ast_func_params_list(ASTree* list, ASTree* param) {
 }
 
 ASTree* ast_func_param(ASTree* type, ASTree* name) {
-	return astree_create(AST_FUNC_PARAM, type, name, NULL, NULL, NULL);
+	int param_type = datatype_ast_to_hash(type->type);
+	ASTree* identifier = astree_create(AST_IDENTIFIER, NULL, NULL, NULL, NULL, name->symbol);
+	declare_identifier(param_type, ID_FUNCTION_PARAM, name->symbol);
+	return astree_create(AST_FUNC_PARAM, type, identifier, NULL, NULL, NULL);
 }
 
 ASTree* ast_func_call(ASTree* name, ASTree* args_list) {

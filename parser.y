@@ -84,22 +84,22 @@
 
 %%
 
-type	:	KW_BYTE		{ $$ = ast_type_byte(); }
-| KW_SHORT				{ $$ = ast_type_short();}
-| KW_LONG				{ $$ = ast_type_long(); }
-| KW_FLOAT				{ $$ = ast_type_float(); }
-| KW_DOUBLE				{ $$ = ast_type_double(); }
+type	:	KW_BYTE		{ $$ = ast_type_byte();		}
+| KW_SHORT				{ $$ = ast_type_short();	}
+| KW_LONG				{ $$ = ast_type_long();		}
+| KW_FLOAT				{ $$ = ast_type_float();	}
+| KW_DOUBLE				{ $$ = ast_type_double();	}
 ;
 
 identifier : TK_IDENTIFIER { $$ = ast_identifier($1);}
 
-literal	: LIT_INTEGER { $$ = ast_literal($1);}
-| LIT_REAL			  { $$ = ast_literal($1);}
-| LIT_CHAR			  { $$ = ast_literal($1);}
+literal	: LIT_INTEGER { $$ = ast_literal($1); }
+| LIT_REAL			  { $$ = ast_literal($1); }
+| LIT_CHAR			  { $$ = ast_literal($1); }
 ;
 
 global_decl_set	: global_decl global_decl_set { $$ = ast_program($1, $2); astree_root = $$; }
-| 	{$$ = NULL;}
+| {$$ = NULL;}
 ;
 
 global_decl	: func_decl ';' { $$ = $1; }
@@ -177,27 +177,27 @@ print_arg :	LIT_STRING	{ $$ = ast_literal($1);}
 ;
 
 flow_ctrl :	KW_WHEN '(' expr ')' KW_THEN command { $$ = ast_cmd_when($3, $6); }
-|	KW_WHEN '(' expr ')' KW_THEN command KW_ELSE command { $$ = ast_cmd_when_else($3, $6, $8); }
-| 	KW_WHILE '(' expr ')' command	{ $$ = ast_cmd_while($3, $5); }
-|	KW_FOR '(' identifier '=' expr KW_TO expr ')' command { $$ = ast_cmd_for($3, $5, $7, $9); }
+| KW_WHEN '(' expr ')' KW_THEN command KW_ELSE command { $$ = ast_cmd_when_else($3, $6, $8); }
+| KW_WHILE '(' expr ')' command	{ $$ = ast_cmd_while($3, $5); }
+| KW_FOR '(' identifier '=' expr KW_TO expr ')' command { $$ = ast_cmd_for($3, $5, $7, $9); }
 ;
 
 expr : '(' expr ')'	{ $$ = ast_expr_parens($2); }
-|	expr '+' expr	{ $$ = ast_op(AST_EXPR_SUM, $1, $3); }
-|	expr '-' expr	{ $$ = ast_op(AST_EXPR_SUB, $1, $3); }
-|	expr '*' expr	{ $$ = ast_op(AST_EXPR_MULT, $1, $3); }
-|	expr '/' expr	{ $$ = ast_op(AST_EXPR_DIV, $1, $3); }
-|	expr '<' expr	{ $$ = ast_op(AST_EXPR_LESSER, $1, $3); }
-|	expr '>' expr	{ $$ = ast_op(AST_EXPR_GREATER, $1, $3); }
-|	expr OPERATOR_LE expr { $$ = ast_op(AST_EXPR_LESSER_EQ, $1, $3); }
-|	expr OPERATOR_GE expr { $$ = ast_op(AST_EXPR_GREATER_EQ, $1, $3); }
-|	expr OPERATOR_EQ expr { $$ = ast_op(AST_EXPR_EQUAL, $1, $3); }
-|	expr OPERATOR_NE expr { $$ = ast_op(AST_EXPR_NOT_EQUAL, $1, $3); }
-|	expr OPERATOR_OR expr { $$ = ast_op(AST_EXPR_OR, $1, $3); }
-|	expr OPERATOR_AND expr	{ $$ = ast_op(AST_EXPR_AND, $1, $3); }
-|	'!' expr { $$ = ast_unary_op(AST_EXPR_NOT, $2); }
-|	'-' expr { $$ = ast_unary_op(AST_EXPR_NEGATIVE, $2); }	%prec  '*'
-| 	expr_arg	{ $$ = $1; }
+| expr '+' expr		{ $$ = ast_op(AST_EXPR_SUM, $1, $3); }
+| expr '-' expr		{ $$ = ast_op(AST_EXPR_SUB, $1, $3); }
+| expr '*' expr		{ $$ = ast_op(AST_EXPR_MULT, $1, $3); }
+| expr '/' expr		{ $$ = ast_op(AST_EXPR_DIV, $1, $3); }
+| expr '<' expr		{ $$ = ast_op(AST_EXPR_LESSER, $1, $3); }
+| expr '>' expr		{ $$ = ast_op(AST_EXPR_GREATER, $1, $3); }
+| expr OPERATOR_LE expr	{ $$ = ast_op(AST_EXPR_LESSER_EQ, $1, $3); }
+| expr OPERATOR_GE expr	{ $$ = ast_op(AST_EXPR_GREATER_EQ, $1, $3); }
+| expr OPERATOR_EQ expr	{ $$ = ast_op(AST_EXPR_EQUAL, $1, $3); }
+| expr OPERATOR_NE expr	{ $$ = ast_op(AST_EXPR_NOT_EQUAL, $1, $3); }
+| expr OPERATOR_OR expr	{ $$ = ast_op(AST_EXPR_OR, $1, $3); }
+| expr OPERATOR_AND expr	{ $$ = ast_op(AST_EXPR_AND, $1, $3); }
+| '!' expr { $$ = ast_unary_op(AST_EXPR_NOT, $2); }
+| '-' expr { $$ = ast_unary_op(AST_EXPR_NEGATIVE, $2); } %prec  '*'
+| expr_arg { $$ = $1; }
 ;
 
 expr_arg : identifier	{ $$ = ast_expr_scalar_access($1); }

@@ -32,9 +32,12 @@ int main(int argc, char* argv[]) {
 
 	yyparse();
 	fclose(input);
+
 	printf("\n==== No syntax errors found. ====\n\n");
+
 	semantics_check(astree_root);
 	printf("\nFinished semantic check.\n");
+
 	if(!semantic_errors_found()) {
 		printf("\n==== Parsing and semantic checks sucessful. ====\n\n");
 	}
@@ -42,9 +45,6 @@ int main(int argc, char* argv[]) {
 		printf("\n==== Semantic errors. Exiting... ====\n\n");
 		exit(4);
 	}
-	//astree_print(astree_root);
-	//printf("Hash table contents: \n");
-	//hash_print();
 
 	if (argc >= 3) {
 		FILE *output = fopen(argv[2], "w");

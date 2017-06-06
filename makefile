@@ -9,7 +9,7 @@
 #
 ##################################################
 
-CC	= gcc
+CC		= gcc
 LINKER	= gcc
 
 CFLAGS	= -std=c99 -Wall -Wno-implicit-function-declaration -Wno-unused-function
@@ -18,7 +18,7 @@ LDFLAGS	=
 ##################################################
 
 # Name of the project (executable binary)
-Project = etapa3
+Project = etapa4
 
 # Source files names
 SourceFiles = y.tab.c lex.yy.c semantics.c hash.c astree.c lang171.c main.c
