@@ -480,7 +480,6 @@ ASTree* ast_cmd_print(ASTree* args) {
 
 ASTree* ast_cmd_return(ASTree* value) {
 	return astree_create(AST_CMD_RETURN, value, NULL, NULL, NULL, NULL);
-
 }
 
 ASTree* ast_print_args(ASTree* list, ASTree* arg)  {

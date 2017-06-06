@@ -186,8 +186,20 @@ void semantics_check(ASTree* node) {
 
 		case AST_CMD_READ:
 			// Check if scalar or array
+			if (node->children[0]->symbol->id_type != ID_SCALAR &&
+				node->children[0]->symbol->id_type != ID_ARRAY)
+			{
+				semantic_error("Command 'read' expects a scalar or array", node);
+			}
+			break;
+
 		case AST_CMD_RETURN:
 			// Check if datatype is numeric
+			if (!numeric_datatype(node->children[0]->datatype)) {
+				semantic_error("Command 'return' expects a numeric value.", node);
+			}
+			break;
+
 		case AST_CMD_WHEN:
 		case AST_CMD_WHEN_ELSE:
 		case AST_CMD_WHILE:
