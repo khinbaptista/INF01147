@@ -182,6 +182,7 @@ void semantics_check(ASTree* node) {
 				// about their types: if this is a bool it is always wrong, so check on node creation.
 				semantic_error("Wrong number of parameters.", node);
 			}
+			node->datatype = AST_DATATYPE_UNDEFINED;
 			break;
 
 		case AST_CMD_READ:
@@ -191,6 +192,7 @@ void semantics_check(ASTree* node) {
 			{
 				semantic_error("Command 'read' expects a scalar or array", node);
 			}
+			node->datatype = AST_DATATYPE_UNDEFINED;
 			break;
 
 		case AST_CMD_RETURN:
@@ -198,14 +200,31 @@ void semantics_check(ASTree* node) {
 			if (!numeric_datatype(node->children[0]->datatype)) {
 				semantic_error("Command 'return' expects a numeric value.", node);
 			}
+			node->datatype = AST_DATATYPE_UNDEFINED;
 			break;
 
 		case AST_CMD_WHEN:
 		case AST_CMD_WHEN_ELSE:
 		case AST_CMD_WHILE:
-			// Check if condition is boolean?
+			// Check if condition is boolean
+			if (node->children[0]->datatype != AST_DATATYPE_BOOL) {
+				semantic_error("Expression must evaluate to a boolean value.", node);
+			}
+			node->datatype = AST_DATATYPE_UNDEFINED;
+			break;
+
 		case AST_CMD_FOR:
-			// Check if variable is scalar
+			// Check if variable is scalar and the expressions are numeric
+			if (node->children[0]->symbol->id_type != ID_SCALAR) {
+				semantic_error("Identifier in 'for' is not a scalar.", node);
+			}
+			if (!numeric_datatype(node->children[1]->datatype) ||
+				!numeric_datatype(node->children[2]->datatype))
+			{
+				semantic_error("Expression in 'for' must evaluate to a numeric value.", node);
+			}
+			node->datatype = AST_DATATYPE_UNDEFINED;
+			break;
 
 		case AST_TYPE_BYTE:
 		case AST_TYPE_SHORT:
@@ -227,6 +246,7 @@ void semantics_check(ASTree* node) {
 		case AST_CMD_PRINT:
 		case AST_PRINT_ARGS:
 		default:
+			node->datatype = AST_DATATYPE_UNDEFINED;
 			break;
 	}
 }
