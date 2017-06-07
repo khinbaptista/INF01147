@@ -1,41 +1,45 @@
 a: byte 1;
 b: short 10;
 c: float 1.5;
-
-d : byte 1.5;	// error
-
+d : byte 1.5;
 v : long[5];
+a : long 0;
 
-long soma(long a, long b)
+long soma(long e, long f)
 	return a + b;
 
-long soma(long a, long b, long c)
-	return a < b;
+long soma2(long g, long h, long i)
+	return a < b;	// error
 
 byte main() {
 	print "string";
 	a = soma(10, 10);
+	a = soma(10);			// error
+	a = soma(10, a < 1);	// error
 	a = b + 1;
-	v = 10;
-	a#1 = 20;
-	v#2.1 = a - 3;
-	a = 1 < 2;
+	v = 10;			// error
+	a#1 = 20;		// error
+	v#2.1 = a - 3;	// error
+	a = 1 < 2;		// error
 
 	c = v[1.0];	// error
 	b = v[c];	// error
 	c = v[3];
 
 	when (1 > a) then ;
-	when (b <= 3) then ;	// error
 
-	for (b = 5 to a < 4) ;	// error
+	for (b = 5 to a < 4) ;	// error (expr not numeric)
 	for (a = 1 to 5) {
 		print a;
 	};
 
-	while (1) ;	// error
+	when (soma(a, b)) then ;	// error (not bool)
+
+	print m;	// error (variable not declared)
+	a = soma;	// error (right-hand value is not a scalar)
+
+	while (1) ;	// error (must be bool)
 	while (a >= 10)
 		a = a - 1;
 	return 0;
 };
-
