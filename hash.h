@@ -22,8 +22,7 @@ enum hash_identifier_type {
 	ID_UNDEFINED,
 	ID_SCALAR,
 	ID_ARRAY,
-	ID_FUNCTION,
-	ID_FUNCTION_PARAM
+	ID_FUNCTION
 };
 
 enum hash_datatype {

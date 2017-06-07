@@ -26,6 +26,7 @@ enum tree_types {	// types
 	AST_FUNC_PARAM,
 	AST_FUNC_CALL,
 	AST_FUNC_ARGS_LIST,
+	AST_FUNC_ARG,
 
 	AST_CMD_LIST,
 	AST_CMD_BLOCK,
@@ -113,10 +114,11 @@ ASTree* ast_var_decl(HashNode* name, ASTree*  type, ASTree* literal);
 ASTree* ast_array_decl(HashNode* name, ASTree*  type, HashNode* array_size, ASTree*  array_init);
 ASTree* ast_array_init(ASTree* literal, ASTree* array_init);
 ASTree* ast_func_decl(ASTree* type, HashNode* name, ASTree* params_list, ASTree* command);
-ASTree* ast_func_params_list(ASTree* list, ASTree* param);
-ASTree* ast_func_param(ASTree* type, ASTree* name);
+ASTree* ast_func_params_list(ASTree* next, ASTree* param);
+ASTree* ast_func_param(ASTree* type, HashNode* name);
 ASTree* ast_func_call(ASTree* name, ASTree* args_list);
-ASTree* ast_func_args_list(ASTree* list, ASTree* arg);
+ASTree* ast_func_args_list(ASTree* next, ASTree* arg);
+ASTree* ast_func_arg(ASTree* expression);
 ASTree* ast_cmd_block(ASTree* cmd_sequence);
 ASTree* ast_cmd_list(ASTree* cmd_sequence, ASTree* command);
 ASTree* ast_cmd_var_attr(ASTree* name, ASTree* value);
@@ -124,7 +126,7 @@ ASTree* ast_cmd_array_attr(ASTree* name, ASTree* index, ASTree* value);
 ASTree* ast_cmd_read(ASTree* var);
 ASTree* ast_cmd_print(ASTree* args);
 ASTree* ast_cmd_return(ASTree* value);
-ASTree* ast_print_args(ASTree* list, ASTree* arg);
+ASTree* ast_print_args(ASTree* next, ASTree* arg);
 ASTree* ast_cmd_when(ASTree* condition, ASTree* command);
 ASTree* ast_cmd_when_else(ASTree* condition, ASTree* when_cmd, ASTree* else_cmd);
 ASTree* ast_cmd_while(ASTree* condition, ASTree* command);

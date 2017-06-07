@@ -24,21 +24,18 @@ void declare_identifier(int datatype, int id_type, HashNode* symbol) {
 	if(symbol->datatype != HASH_TYPE_UNDEFINED) {
 		fprintf(stderr, "\nError at line %d: Identifier %s was already declared.\n", getLineNumber(), symbol->text);
 		semantic_error_flag = 1;
-	} else {
-		fprintf(stderr, "\nDeclaring identifier %s", symbol->text);
-		switch(id_type) {
-			case ID_SCALAR: fprintf(stderr, " as scalar"); break;
-			case ID_ARRAY: fprintf(stderr, " as array"); break;
-			case ID_FUNCTION: fprintf(stderr, " as function"); break;
-		}
 	}
-	symbol->datatype = datatype;
-	symbol->id_type = id_type;
+    else {
+        symbol->datatype = datatype;
+        symbol->id_type = id_type;
+	}
 }
 
 void declare_function(int datatype, HashNode* symbol, struct astree* params) {
+    if(symbol->datatype == HASH_TYPE_UNDEFINED) {
+	    symbol->function_params = params;
+    }
 	declare_identifier(datatype, ID_FUNCTION, symbol);
-	symbol->function_params = params;
 }
 
 int numeric_datatype(int type) {
@@ -69,10 +66,9 @@ void semantics_check(ASTree* node) {
 		return;
 	}
 	// Check children recursively before checking node.
-	semantics_check(node->children[0]);
-	semantics_check(node->children[1]);
-	semantics_check(node->children[2]);
-	semantics_check(node->children[3]);
+    for(int i = 0; i < MAX_CHILDREN; ++i) {
+	    semantics_check(node->children[i]);
+    }
 
 	switch(node->type) {
 		case AST_LITERAL:
@@ -95,7 +91,7 @@ void semantics_check(ASTree* node) {
 				semantic_error_var(node->children[0]->symbol->text, "is not an array.", node);
 			}
 			if (!datatype_integer(node->children[1]->datatype)) {
-				semantic_error_var(node->children[0]->symbol->text, "index is not an integer.", node);
+				semantic_error_var(node->children[0]->symbol->text, "being accessed, index is not an integer.", node);
 			}
 			node->datatype = datatype_hash_to_ast(node->children[0]->symbol->datatype);
 			break;
@@ -173,20 +169,27 @@ void semantics_check(ASTree* node) {
 			break;
 
 		case AST_FUNC_CALL:
+            assert(node->children[0] && node->children[1]);
 			if (node->children[0]->symbol->id_type != ID_FUNCTION) {
 				semantic_error("Identifier is not a function.", node);
 			}
 			int param_count	= ast_param_list_count(node->children[0]->symbol->function_params);
 			int arg_count	= ast_param_list_count(node->children[1]);
 			if (arg_count != param_count) {
-				// about their types: if this is a bool it is always wrong, so check on node creation.
 				semantic_error("Wrong number of parameters.", node);
 			}
-			node->datatype = AST_DATATYPE_UNDEFINED;
+			node->datatype = datatype_hash_to_ast(node->children[0]->symbol->datatype);
 			break;
+        case AST_FUNC_ARG:
+            assert(node->children[0]);
+            if(! numeric_datatype(node->children[0]->datatype)) {
+                semantic_error("Function arguments have to be numeric.", node);
+            }
+            node->datatype = node->children[0]->datatype;
+            break;
 
 		case AST_CMD_READ:
-			// Check if scalar or array
+			assert(node->children[0]);
 			if (node->children[0]->symbol->id_type != ID_SCALAR &&
 				node->children[0]->symbol->id_type != ID_ARRAY)
 			{
@@ -196,6 +199,7 @@ void semantics_check(ASTree* node) {
 			break;
 
 		case AST_CMD_RETURN:
+            assert(node->children[0]);
 			// Check if datatype is numeric
 			if (!numeric_datatype(node->children[0]->datatype)) {
 				semantic_error("Command 'return' expects a numeric value.", node);
@@ -206,6 +210,7 @@ void semantics_check(ASTree* node) {
 		case AST_CMD_WHEN:
 		case AST_CMD_WHEN_ELSE:
 		case AST_CMD_WHILE:
+            assert(node->children[0]);
 			// Check if condition is boolean
 			if (node->children[0]->datatype != AST_DATATYPE_BOOL) {
 				semantic_error("Expression must evaluate to a boolean value.", node);
@@ -214,6 +219,7 @@ void semantics_check(ASTree* node) {
 			break;
 
 		case AST_CMD_FOR:
+            assert(node->children[0] && node->children[1] && node->children[2]);
 			// Check if variable is scalar and the expressions are numeric
 			if (node->children[0]->symbol->id_type != ID_SCALAR) {
 				semantic_error("Identifier in 'for' is not a scalar.", node);
@@ -226,6 +232,37 @@ void semantics_check(ASTree* node) {
 			node->datatype = AST_DATATYPE_UNDEFINED;
 			break;
 
+		case AST_CMD_VAR_ATTR:
+            assert(node->children[0] && node->children[1]);
+            // Check if identifier is scalar
+            if( node->children[0]->symbol->id_type != ID_SCALAR &&
+				node->children[0]->symbol->id_type != ID_UNDEFINED) {
+				semantic_error_var(node->children[0]->symbol->text, "being assigned is not a scalar.", node);
+			}
+            // Check if value is numeric
+            if(!numeric_datatype(node->children[1]->datatype)) {
+                semantic_error("Variables can only be assigned numeric values.", node);
+            }
+            node->datatype = datatype_hash_to_ast(node->children[1]->datatype);
+            break;
+		case AST_CMD_ARRAY_ATTR:
+            assert(node->children[0] && node->children[1] && node->children[2]);
+            // Check if identifier is array
+			if (node->children[0]->symbol->id_type != ID_ARRAY &&
+				node->children[0]->symbol->id_type != ID_UNDEFINED) {
+				semantic_error_var(node->children[0]->symbol->text, "being assigned is not an array.", node);
+			}
+            // Check if index is integer
+			if (!datatype_integer(node->children[1]->datatype)) {
+				semantic_error_var(node->children[0]->symbol->text, "being assigned, index is not an integer.", node);
+			}
+            // Check if value is numeric
+            if(!numeric_datatype(node->children[2]->datatype)) {
+                semantic_error("Variables can only be assigned numeric values.", node);
+            }
+			node->datatype = datatype_hash_to_ast(node->children[2]->datatype);
+            break;
+        //
 		case AST_TYPE_BYTE:
 		case AST_TYPE_SHORT:
 		case AST_TYPE_LONG:
@@ -241,8 +278,6 @@ void semantics_check(ASTree* node) {
 		case AST_FUNC_ARGS_LIST:
 		case AST_CMD_LIST:
 		case AST_CMD_BLOCK:
-		case AST_CMD_VAR_ATTR:
-		case AST_CMD_ARRAY_ATTR:
 		case AST_CMD_PRINT:
 		case AST_PRINT_ARGS:
 		default:

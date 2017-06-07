@@ -122,10 +122,10 @@ params_list	: params	{ $$ = $1; }
 ;
 
 params : params ',' param	{ $$ = ast_func_params_list($1, $3); }
-| param 					{ $$ = ast_func_params_list($1, NULL); }
+| param 					{ $$ = ast_func_params_list(NULL, $1); }
 ;
 
-param :	type identifier { $$ = ast_func_param($1, $2); }
+param :	type TK_IDENTIFIER { $$ = ast_func_param($1, $2); }
 ;
 
 func_call :	identifier '(' args_list ')' { $$ = ast_func_call($1, $3);}
@@ -136,10 +136,10 @@ args_list :	args	{ $$ = $1; }
 ;
 
 args : args ',' arg	{ $$ = ast_func_args_list($1, $3); }
-| arg 				{ $$ = ast_func_args_list($1, NULL); }
+| arg 				{ $$ = ast_func_args_list(NULL, $1); }
 ;
 
-arg	: expr
+arg	: expr { $$ = ast_func_arg($1); }
 ;
 
 command	: command_block
@@ -169,7 +169,7 @@ basic_command :	KW_READ identifier	{ $$ = ast_cmd_read($2); }
 ;
 
 print_args : print_args print_arg { $$ = ast_print_args($1, $2); }
-| print_arg	{ $$ = ast_print_args($1, NULL); }
+| print_arg	{ $$ = ast_print_args(NULL, $1); }
 ;
 
 print_arg :	LIT_STRING	{ $$ = ast_literal($1);}
@@ -209,6 +209,6 @@ expr_arg : identifier	{ $$ = ast_expr_scalar_access($1); }
 %%
 
 int yyerror(char* what) {
-	fprintf(stderr, "Parser error at line %d: %s\n", getLineNumber(), what);
+	fprintf(stderr, "\nParser error at line %d: %s\n", getLineNumber(), what);
 	exit(3);
 }
