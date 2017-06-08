@@ -32,7 +32,6 @@ int main(int argc, char* argv[]) {
 
 	yyparse();
 	fclose(input);
-	printf("\n==== No syntax errors found. ====\n");
 	semantics_check(astree_root);
 	printf("\nFinished semantic check.\n");
 

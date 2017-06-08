@@ -10,13 +10,14 @@ long soma(long e, long f)
 
 long soma2(long g, long h, long i)
 	return a < b;	// error
-
+long f() return 1;
 byte main() {
 	print "string";
 	a = soma(10, 10);
 	a = soma(10);			// error
 	a = soma(10, a < 1);	// error
 	a = b + 1;
+	a = f();
 	v = 10;			// error
 	a#1 = 20;		// error
 	v#2.1 = a - 3;	// error

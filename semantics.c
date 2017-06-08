@@ -169,7 +169,7 @@ void semantics_check(ASTree* node) {
 			break;
 
 		case AST_FUNC_CALL:
-			assert(node->children[0] && node->children[1]);
+			assert(node->children[0]);
 			if (node->children[0]->symbol->id_type != ID_FUNCTION) {
 				semantic_error("Identifier is not a function.", node);
 			}
