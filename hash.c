@@ -89,7 +89,7 @@ HashNode* hash_insert(int type, char* text) {
 HashNode* hash_make_temp() {
 	static int serial_number = 1;
 	static char buffer[128];
-	size_t length;
+	size_t length = 0;
 
 	sprintf(buffer, "__temporary%d", serial_number++);
 	length = strlen(buffer);
@@ -103,6 +103,25 @@ HashNode* hash_make_temp() {
 	_table[address] = temp;
 
 	return temp;
+}
+
+HashNode* hash_make_label() {
+	static int serial_number = 1;
+	static char buffer[128];
+	size_t length = 0;
+
+	sprintf(buffer, "__label%d", serial_number++);
+	length = strlen(buffer);
+
+	HashNode *label	= calloc(1, sizeof(HashNode));
+	label->text		= calloc(length + 1, sizeof(char));
+	strcpy(label->text, buffer);
+
+	int address = hash_address(buffer);
+	label->next = _table[address];
+	_table[address] = label;
+
+	return label;
 }
 
 void hash_print() {

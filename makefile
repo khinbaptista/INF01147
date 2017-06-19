@@ -21,7 +21,8 @@ LDFLAGS	=
 Project = etapa4
 
 # Source files names
-SourceFiles = y.tab.c lex.yy.c semantics.c hash.c astree.c lang171.c main.c
+SourceFiles = y.tab.c lex.yy.c semantics.c \
+			hash.c astree.c lang171.c tacs.c main.c
 
 ##################################################
 

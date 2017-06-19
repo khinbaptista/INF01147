@@ -4,7 +4,7 @@
 #include "astree.h"
 
 enum tac_types {
-	TAC_UNKNOWN,
+	TAC_UNKNOWN = 0,
 	TAC_LABLE,
 	TAC_SYMBOL,
 	// ...
@@ -41,3 +41,7 @@ TAC* tac_create(int type, HashNode*, HashNode*, HashNode*);
 TAC* tac_create_op(int type, HashNode *op1, HashNode *op2);
 
 TAC* tac_join(TAC*, TAC*);
+TAC* tac_reverse(TAC*);
+
+void tac_print_back(TAC* last);
+void tac_print_forward(TAC* first);
