@@ -53,4 +53,6 @@ HashNode* hash_insert(int type, char* text);
 void hash_declare(int datatype, int id_type, HashNode* symbol);
 void hash_declare_function(int datatype, HashNode* symbol, struct astree* params);
 
+HashNode* hash_make_temp();
+
 void hash_print();

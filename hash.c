@@ -86,6 +86,25 @@ HashNode* hash_insert(int type, char* text) {
 	return node;
 }
 
+HashNode* hash_make_temp() {
+	static int serial_number = 1;
+	static char buffer[128];
+	size_t length;
+
+	sprintf(buffer, "__temporary%d", serial_number++);
+	length = strlen(buffer);
+
+	HashNode *temp	= calloc(1, sizeof(HashNode));
+	temp->text		= calloc(length + 1, sizeof(char));
+	strcpy(temp->text, buffer);
+
+	int address = hash_address(buffer);
+	temp->next = _table[address];
+	_table[address] = temp;
+
+	return temp;
+}
+
 void hash_print() {
 	int i;
 	for (i = 0; i < HASH_SIZE; i++) {
