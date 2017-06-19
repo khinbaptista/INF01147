@@ -17,32 +17,30 @@ TAC* tac_generate(ASTree *node) {
 		case AST_LITERAL:
 			result = tac_create(TAC_SYMBOL, node->symbol, NULL, NULL);
 			break;
+
 		case AST_EXPR_SCALAR_ACCESS:
 			result = tac_create(TAC_SYMBOL,
-				code[0] ? code[0]->res : NULL,
-				NULL, NULL);
+				code[0] ? code[0]->res : NULL, NULL, NULL);
 			break;
+
 		case AST_CMD_VAR_ATTR:
 			result = tac_create(TAC_MOV,
-				code[0] ? code[0]->res : NULL,
-				code[1] ? code[1]->res : NULL,
+				code[0] ? code[0]->res : NULL, code[1] ? code[1]->res : NULL,
 				NULL);
 			break;
+
 		case AST_EXPR_SUM:
 			result = tac_create_op(TAC_ADD,
-				code[0] ? code[0]->res : NULL,
-				code[1] ? code[1]->res : NULL
-			);
+				code[0] ? code[0]->res : NULL, code[1] ? code[1]->res : NULL);
 			break;
+
 		case AST_EXPR_SUB:
 			result = tac_create_op(TAC_SUB,
-				code[0] ? code[0]->res : NULL,
-				code[1] ? code[1]->res : NULL
-			);
+				code[0] ? code[0]->res : NULL, code[1] ? code[1]->res : NULL);
 			break;
+
 		default:
 			result = tac_join(tac_join(tac_join(code[0], code[1]), code[2]), code[3]);
-			break;
 	}
 
 	return result;
