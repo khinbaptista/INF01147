@@ -1,7 +1,8 @@
 #pragma once
 
-#include "hash.h"
 #include <stdio.h>
+#include "hash.h"
+#include "tacs.h"
 
 #define MAX_CHILDREN 4
 
@@ -78,8 +79,9 @@ typedef struct astree {
 	int type;
 	int datatype;
 	int line;
-	struct astree* children[ MAX_CHILDREN ];
-	HashNode* symbol;
+	struct astree *children[ MAX_CHILDREN ];
+	HashNode	*symbol;
+	struct tac	*tac;
 } ASTree;
 
 ASTree* astree_create(

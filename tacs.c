@@ -14,13 +14,30 @@ TAC* tac_generate(ASTree *node) {
 	}
 
 	switch (node->type) {
-		case AST_IDENTIFIER:
+		case AST_LITERAL:
 			result = tac_create(TAC_SYMBOL, node->symbol, NULL, NULL);
+			break;
+		case AST_EXPR_SCALAR_ACCESS:
+			result = tac_create(TAC_SYMBOL,
+				code[0] ? code[0]->res : NULL,
+				NULL, NULL);
+			break;
+		case AST_CMD_VAR_ATTR:
+			result = tac_create(TAC_MOV,
+				code[0] ? code[0]->res : NULL,
+				code[1] ? code[1]->res : NULL,
+				NULL);
 			break;
 		case AST_EXPR_SUM:
 			result = tac_create_op(TAC_ADD,
-				node->children[0]->symbol,
-				node->children[1]->symbol
+				code[0] ? code[0]->res : NULL,
+				code[1] ? code[1]->res : NULL
+			);
+			break;
+		case AST_EXPR_SUB:
+			result = tac_create_op(TAC_SUB,
+				code[0] ? code[0]->res : NULL,
+				code[1] ? code[1]->res : NULL
 			);
 			break;
 		default:
@@ -72,21 +89,23 @@ void _tac_print(TAC *tac) {
 	fprintf(stderr, "TAC(");
 
 	switch (tac->type) {
-		case TAC_ADD:	fprintf(stderr, "ADD");		break;
-		case TAC_SUB:	fprintf(stderr, "SUB");		break;
-		case TAC_MULT:	fprintf(stderr, "MULT");	break;
-		case TAC_DIV:	fprintf(stderr, "DIV");		break;
-		default:		fprintf(stderr, "UNKNOWN");	break;
+		case TAC_SYMBOL:	fprintf(stderr, "SYMBOL");	break;
+		case TAC_MOV:		fprintf(stderr, "MOV");		break;
+		case TAC_ADD:		fprintf(stderr, "ADD");		break;
+		case TAC_SUB:		fprintf(stderr, "SUB");		break;
+		case TAC_MULT:		fprintf(stderr, "MULT");	break;
+		case TAC_DIV:		fprintf(stderr, "DIV");		break;
+		default:			fprintf(stderr, "UNKNOWN");	break;
 	}
 
 	if (tac->res)	fprintf(stderr, ", %s", tac->res->text);
-	else			fprintf(stderr, ", 0");
+	else			fprintf(stderr, ", NULL");
 	if (tac->op1)	fprintf(stderr, ", %s", tac->op1->text);
-	else			fprintf(stderr, ", 0");
+	else			fprintf(stderr, ", NULL");
 	if (tac->op2)	fprintf(stderr, ", %s", tac->op2->text);
-	else			fprintf(stderr, ", 0");
+	else			fprintf(stderr, ", NULL");
 
-	fprintf(stderr, ")");
+	fprintf(stderr, ")\n");
 }
 
 void tac_print_back(TAC *last) {

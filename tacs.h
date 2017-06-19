@@ -35,7 +35,7 @@ typedef struct tac {
 	struct tac *next;
 } TAC;
 
-TAC* tac_generate(ASTree*);
+TAC* tac_generate(struct astree*);
 
 TAC* tac_create(int type, HashNode*, HashNode*, HashNode*);
 TAC* tac_create_op(int type, HashNode *op1, HashNode *op2);

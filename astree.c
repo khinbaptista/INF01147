@@ -48,6 +48,206 @@ void astree_print(ASTree* node, int level) {
 	if (node->children[3]) astree_print(node->children[3], level - 1);
 }
 
+int datatype_ast_to_hash(int ast_type) {
+	switch(ast_type) {
+		case AST_TYPE_BYTE:
+			return HASH_TYPE_BYTE;
+		case AST_TYPE_SHORT:
+			return HASH_TYPE_SHORT;
+		case AST_TYPE_LONG:
+			return HASH_TYPE_LONG;
+		case AST_TYPE_FLOAT:
+			return HASH_TYPE_FLOAT;
+		case AST_TYPE_DOUBLE:
+			return HASH_TYPE_DOUBLE;
+		default:
+			return HASH_TYPE_UNDEFINED;
+	}
+}
+
+int datatype_hash_to_ast(int hash_type) {
+	switch(hash_type) {
+		case HASH_TYPE_STRING:
+			return AST_DATATYPE_STRING;
+		case HASH_TYPE_BYTE:
+			return AST_DATATYPE_BYTE;
+		case HASH_TYPE_SHORT:
+			return AST_DATATYPE_SHORT;
+		case HASH_TYPE_LONG:
+			return AST_DATATYPE_LONG;
+		case HASH_TYPE_FLOAT:
+			return AST_DATATYPE_FLOAT;
+		case HASH_TYPE_DOUBLE:
+			return AST_DATATYPE_DOUBLE;
+		default:
+			return AST_DATATYPE_UNDEFINED;
+	}
+}
+
+int ast_param_list_count(ASTree* list) {
+	if (list == NULL) { return 0; }
+
+	ASTree *it = list;
+	int count = 0;
+
+	while (it) {
+		ASTree* next = it->children[0];
+		count++;
+		it = next;
+	}
+
+	return count;
+}
+
+ASTree* ast_literal(HashNode* symbol) {
+	return astree_create(AST_LITERAL, NULL, NULL, NULL, NULL, symbol);
+}
+
+ASTree* ast_identifier(HashNode* symbol) {
+	return astree_create(AST_IDENTIFIER, NULL, NULL, NULL, NULL, symbol);
+}
+
+ASTree* ast_type_byte() {
+	return astree_create(AST_TYPE_BYTE, NULL, NULL, NULL, NULL, NULL);
+}
+
+ASTree* ast_type_short() {
+	return astree_create(AST_TYPE_SHORT, NULL, NULL, NULL, NULL, NULL);
+}
+
+ASTree* ast_type_long() {
+	return astree_create(AST_TYPE_LONG, NULL, NULL, NULL, NULL, NULL);
+}
+
+ASTree* ast_type_float() {
+	return astree_create(AST_TYPE_FLOAT, NULL, NULL, NULL, NULL, NULL);
+}
+
+ASTree* ast_type_double() {
+	return astree_create(AST_TYPE_DOUBLE, NULL, NULL, NULL, NULL, NULL);
+}
+
+ASTree* ast_program(ASTree* decl, ASTree* decl_set) {
+	return astree_create(AST_PROGRAM, decl, decl_set, NULL, NULL, NULL);
+}
+
+ASTree* ast_var_decl(HashNode* name, ASTree* type, ASTree* literal) {
+	int var_type = datatype_ast_to_hash(type->type);
+	ASTree* identifier = astree_create(AST_IDENTIFIER, NULL, NULL, NULL, NULL, name);
+	declare_identifier(var_type, ID_SCALAR, name);
+	return astree_create(AST_VAR_DECL, identifier, type, literal, NULL, NULL);
+}
+
+ASTree* ast_array_decl(HashNode* name, ASTree*  type, HashNode* array_size, ASTree*  array_init) {
+	int var_type = datatype_ast_to_hash(type->type);
+	ASTree* identifier = astree_create(AST_IDENTIFIER, NULL, NULL, NULL, NULL, name);
+	declare_identifier(var_type, ID_ARRAY, name);
+	return astree_create(AST_ARRAY_DECL, identifier, type, ast_literal(array_size), array_init, NULL);
+}
+
+ASTree* ast_array_init(ASTree* literal, ASTree* array_init) {
+	return astree_create(AST_ARRAY_INIT, literal, array_init, NULL, NULL, NULL);
+}
+
+ASTree* ast_func_decl(ASTree* type, HashNode* name, ASTree* params_list, ASTree* command) {
+	int return_type = datatype_ast_to_hash(type->type);
+	ASTree* identifier = astree_create(AST_IDENTIFIER, NULL, NULL, NULL, NULL, name);
+	declare_function(return_type, name, params_list);
+	return astree_create(AST_FUNC_DECL, type, identifier, params_list, command, NULL);
+}
+
+ASTree* ast_func_params_list(ASTree* next, ASTree* param) {
+	return astree_create(AST_FUNC_PARAMS_LIST, next, param, NULL, NULL, NULL);
+}
+
+ASTree* ast_func_param(ASTree* type, HashNode* name) {
+	int param_type = datatype_ast_to_hash(type->type);
+	ASTree* identifier = astree_create(AST_IDENTIFIER, NULL, NULL, NULL, NULL, name);
+	declare_identifier(param_type, ID_SCALAR, name);
+	return astree_create(AST_FUNC_PARAM, type, identifier, NULL, NULL, NULL);
+}
+
+ASTree* ast_func_call(ASTree* name, ASTree* args_list) {
+	return astree_create(AST_FUNC_CALL, name, args_list, NULL, NULL, NULL);
+}
+
+ASTree* ast_func_args_list(ASTree* next, ASTree* arg) {
+	return astree_create(AST_FUNC_ARGS_LIST, next, arg, NULL, NULL, NULL);
+}
+
+ASTree* ast_func_arg(ASTree* expression) {
+	return astree_create(AST_FUNC_ARG, expression, NULL, NULL, NULL, NULL);
+}
+
+ASTree* ast_cmd_block(ASTree* cmd_sequence) {
+	return astree_create(AST_CMD_BLOCK, cmd_sequence, NULL, NULL, NULL, NULL);
+}
+
+ASTree* ast_cmd_list(ASTree* cmd_sequence, ASTree* command) {
+	return astree_create(AST_CMD_LIST, cmd_sequence, command, NULL, NULL, NULL);
+}
+
+ASTree* ast_cmd_var_attr(ASTree* name, ASTree* value) {
+	return astree_create(AST_CMD_VAR_ATTR, name, value, NULL, NULL, NULL);
+}
+
+ASTree* ast_cmd_array_attr(ASTree* name, ASTree* index, ASTree* value) {
+	return astree_create(AST_CMD_ARRAY_ATTR, name, index, value, NULL, NULL);
+}
+
+ASTree* ast_cmd_read(ASTree* var) {
+	return astree_create(AST_CMD_READ, var, NULL, NULL, NULL, NULL);
+}
+
+ASTree* ast_cmd_print(ASTree* args) {
+	return astree_create(AST_CMD_PRINT, args, NULL, NULL, NULL, NULL);
+}
+
+ASTree* ast_cmd_return(ASTree* value) {
+	return astree_create(AST_CMD_RETURN, value, NULL, NULL, NULL, NULL);
+}
+
+ASTree* ast_print_args(ASTree* next, ASTree* arg)  {
+	return astree_create(AST_PRINT_ARGS, next, arg, NULL, NULL, NULL);
+}
+
+ASTree* ast_cmd_when(ASTree* condition, ASTree* command) {
+	return astree_create(AST_CMD_WHEN, condition, command, NULL, NULL, NULL);
+}
+
+ASTree* ast_cmd_when_else(ASTree* condition, ASTree* when_cmd, ASTree* else_cmd) {
+	return astree_create(AST_CMD_WHEN_ELSE, condition, when_cmd, else_cmd, NULL, NULL);
+}
+
+ASTree* ast_cmd_while(ASTree* condition, ASTree* command) {
+	return astree_create(AST_CMD_WHILE, condition, command, NULL, NULL, NULL);
+}
+
+ASTree* ast_cmd_for(ASTree* var, ASTree* start, ASTree* end, ASTree* command) {
+	return astree_create(AST_CMD_FOR, var, start, end, command, NULL);
+}
+
+ASTree* ast_expr_parens(ASTree* expression) {
+	return astree_create(AST_EXPR_PARENS, expression, NULL, NULL, NULL, NULL);
+}
+
+ASTree* ast_op(int type, ASTree* left, ASTree* right) {
+	return astree_create(type, left, right, NULL, NULL, NULL);
+}
+
+ASTree* ast_unary_op(int type, ASTree* operand) {
+	return astree_create(type, operand, NULL, NULL, NULL, NULL);
+}
+
+ASTree* ast_expr_scalar_access(ASTree* var) {
+	return astree_create(AST_EXPR_SCALAR_ACCESS, var, NULL, NULL, NULL, NULL);
+}
+
+ASTree* ast_expr_array_access(ASTree* name, ASTree* index) {
+	return astree_create(AST_EXPR_ARRAY_ACCESS, name, index, NULL, NULL, NULL);
+}
+
+
 // Assumes 'file' is a valid handle to an open file
 void astree_write_code(FILE* file, ASTree* node) {
 	switch (node->type) {
@@ -328,203 +528,4 @@ void astree_write_code(FILE* file, ASTree* node) {
 			fprintf(stderr,"Unknown AST node!!");
 			break;
 	}
-}
-
-int datatype_ast_to_hash(int ast_type) {
-	switch(ast_type) {
-		case AST_TYPE_BYTE:
-			return HASH_TYPE_BYTE;
-		case AST_TYPE_SHORT:
-			return HASH_TYPE_SHORT;
-		case AST_TYPE_LONG:
-			return HASH_TYPE_LONG;
-		case AST_TYPE_FLOAT:
-			return HASH_TYPE_FLOAT;
-		case AST_TYPE_DOUBLE:
-			return HASH_TYPE_DOUBLE;
-		default:
-			return HASH_TYPE_UNDEFINED;
-	}
-}
-
-int datatype_hash_to_ast(int hash_type) {
-	switch(hash_type) {
-		case HASH_TYPE_STRING:
-			return AST_DATATYPE_STRING;
-		case HASH_TYPE_BYTE:
-			return AST_DATATYPE_BYTE;
-		case HASH_TYPE_SHORT:
-			return AST_DATATYPE_SHORT;
-		case HASH_TYPE_LONG:
-			return AST_DATATYPE_LONG;
-		case HASH_TYPE_FLOAT:
-			return AST_DATATYPE_FLOAT;
-		case HASH_TYPE_DOUBLE:
-			return AST_DATATYPE_DOUBLE;
-		default:
-			return AST_DATATYPE_UNDEFINED;
-	}
-}
-
-int ast_param_list_count(ASTree* list) {
-	if (list == NULL) { return 0; }
-
-	ASTree *it = list;
-	int count = 0;
-
-	while (it) {
-		ASTree* next = it->children[0];
-		count++;
-		it = next;
-	}
-
-	return count;
-}
-
-ASTree* ast_literal(HashNode* symbol) {
-	return astree_create(AST_LITERAL, NULL, NULL, NULL, NULL, symbol);
-}
-
-ASTree* ast_identifier(HashNode* symbol) {
-	return astree_create(AST_IDENTIFIER, NULL, NULL, NULL, NULL, symbol);
-}
-
-ASTree* ast_type_byte() {
-	return astree_create(AST_TYPE_BYTE, NULL, NULL, NULL, NULL, NULL);
-}
-
-ASTree* ast_type_short() {
-	return astree_create(AST_TYPE_SHORT, NULL, NULL, NULL, NULL, NULL);
-}
-
-ASTree* ast_type_long() {
-	return astree_create(AST_TYPE_LONG, NULL, NULL, NULL, NULL, NULL);
-}
-
-ASTree* ast_type_float() {
-	return astree_create(AST_TYPE_FLOAT, NULL, NULL, NULL, NULL, NULL);
-}
-
-ASTree* ast_type_double() {
-	return astree_create(AST_TYPE_DOUBLE, NULL, NULL, NULL, NULL, NULL);
-}
-
-ASTree* ast_program(ASTree* decl, ASTree* decl_set) {
-	return astree_create(AST_PROGRAM, decl, decl_set, NULL, NULL, NULL);
-}
-
-ASTree* ast_var_decl(HashNode* name, ASTree* type, ASTree* literal) {
-	int var_type = datatype_ast_to_hash(type->type);
-	ASTree* identifier = astree_create(AST_IDENTIFIER, NULL, NULL, NULL, NULL, name);
-	declare_identifier(var_type, ID_SCALAR, name);
-	return astree_create(AST_VAR_DECL, identifier, type, literal, NULL, NULL);
-}
-
-ASTree* ast_array_decl(HashNode* name, ASTree*  type, HashNode* array_size, ASTree*  array_init) {
-	int var_type = datatype_ast_to_hash(type->type);
-	ASTree* identifier = astree_create(AST_IDENTIFIER, NULL, NULL, NULL, NULL, name);
-	declare_identifier(var_type, ID_ARRAY, name);
-	return astree_create(AST_ARRAY_DECL, identifier, type, ast_literal(array_size), array_init, NULL);
-}
-
-ASTree* ast_array_init(ASTree* literal, ASTree* array_init) {
-	return astree_create(AST_ARRAY_INIT, literal, array_init, NULL, NULL, NULL);
-}
-
-ASTree* ast_func_decl(ASTree* type, HashNode* name, ASTree* params_list, ASTree* command) {
-	int return_type = datatype_ast_to_hash(type->type);
-	ASTree* identifier = astree_create(AST_IDENTIFIER, NULL, NULL, NULL, NULL, name);
-	declare_function(return_type, name, params_list);
-	return astree_create(AST_FUNC_DECL, type, identifier, params_list, command, NULL);
-}
-
-ASTree* ast_func_params_list(ASTree* next, ASTree* param) {
-	return astree_create(AST_FUNC_PARAMS_LIST, next, param, NULL, NULL, NULL);
-}
-
-ASTree* ast_func_param(ASTree* type, HashNode* name) {
-	int param_type = datatype_ast_to_hash(type->type);
-	ASTree* identifier = astree_create(AST_IDENTIFIER, NULL, NULL, NULL, NULL, name);
-	declare_identifier(param_type, ID_SCALAR, name);
-	return astree_create(AST_FUNC_PARAM, type, identifier, NULL, NULL, NULL);
-}
-
-ASTree* ast_func_call(ASTree* name, ASTree* args_list) {
-	return astree_create(AST_FUNC_CALL, name, args_list, NULL, NULL, NULL);
-}
-
-ASTree* ast_func_args_list(ASTree* next, ASTree* arg) {
-	return astree_create(AST_FUNC_ARGS_LIST, next, arg, NULL, NULL, NULL);
-}
-
-ASTree* ast_func_arg(ASTree* expression) {
-	return astree_create(AST_FUNC_ARG, expression, NULL, NULL, NULL, NULL);
-}
-
-ASTree* ast_cmd_block(ASTree* cmd_sequence) {
-	return astree_create(AST_CMD_BLOCK, cmd_sequence, NULL, NULL, NULL, NULL);
-}
-
-ASTree* ast_cmd_list(ASTree* cmd_sequence, ASTree* command) {
-	return astree_create(AST_CMD_LIST, cmd_sequence, command, NULL, NULL, NULL);
-}
-
-ASTree* ast_cmd_var_attr(ASTree* name, ASTree* value) {
-	return astree_create(AST_CMD_VAR_ATTR, name, value, NULL, NULL, NULL);
-}
-
-ASTree* ast_cmd_array_attr(ASTree* name, ASTree* index, ASTree* value) {
-	return astree_create(AST_CMD_ARRAY_ATTR, name, index, value, NULL, NULL);
-}
-
-ASTree* ast_cmd_read(ASTree* var) {
-	return astree_create(AST_CMD_READ, var, NULL, NULL, NULL, NULL);
-}
-
-ASTree* ast_cmd_print(ASTree* args) {
-	return astree_create(AST_CMD_PRINT, args, NULL, NULL, NULL, NULL);
-}
-
-ASTree* ast_cmd_return(ASTree* value) {
-	return astree_create(AST_CMD_RETURN, value, NULL, NULL, NULL, NULL);
-}
-
-ASTree* ast_print_args(ASTree* next, ASTree* arg)  {
-	return astree_create(AST_PRINT_ARGS, next, arg, NULL, NULL, NULL);
-}
-
-ASTree* ast_cmd_when(ASTree* condition, ASTree* command) {
-	return astree_create(AST_CMD_WHEN, condition, command, NULL, NULL, NULL);
-}
-
-ASTree* ast_cmd_when_else(ASTree* condition, ASTree* when_cmd, ASTree* else_cmd) {
-	return astree_create(AST_CMD_WHEN_ELSE, condition, when_cmd, else_cmd, NULL, NULL);
-}
-
-ASTree* ast_cmd_while(ASTree* condition, ASTree* command) {
-	return astree_create(AST_CMD_WHILE, condition, command, NULL, NULL, NULL);
-}
-
-ASTree* ast_cmd_for(ASTree* var, ASTree* start, ASTree* end, ASTree* command) {
-	return astree_create(AST_CMD_FOR, var, start, end, command, NULL);
-}
-
-ASTree* ast_expr_parens(ASTree* expression) {
-	return astree_create(AST_EXPR_PARENS, expression, NULL, NULL, NULL, NULL);
-}
-
-ASTree* ast_op(int type, ASTree* left, ASTree* right) {
-	return astree_create(type, left, right, NULL, NULL, NULL);
-}
-
-ASTree* ast_unary_op(int type, ASTree* operand) {
-	return astree_create(type, operand, NULL, NULL, NULL, NULL);
-}
-
-ASTree* ast_expr_scalar_access(ASTree* var) {
-	return astree_create(AST_EXPR_SCALAR_ACCESS, var, NULL, NULL, NULL, NULL);
-}
-
-ASTree* ast_expr_array_access(ASTree* name, ASTree* index) {
-	return astree_create(AST_EXPR_ARRAY_ACCESS, name, index, NULL, NULL, NULL);
 }

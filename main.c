@@ -10,6 +10,7 @@
 #include "astree.h"
 #include "lang171.h"
 #include "semantics.h"
+#include "tacs.h"
 
 extern FILE* yyin;
 void yyparse(void);
@@ -42,6 +43,10 @@ int main(int argc, char* argv[]) {
 		printf("\n==== Semantic errors. Exiting... ====\n\n");
 		exit(4);
 	}
+
+	TAC *tac = tac_generate(astree_root);
+	tac = tac_reverse(tac);
+	tac_print_forward(tac);
 
 	if (argc >= 3) {
 		FILE *output = fopen(argv[2], "w");
