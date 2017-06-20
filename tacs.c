@@ -24,7 +24,6 @@ TAC* tac_generate(ASTree *node) {
 		children[i] = tac_generate(node->children[i]);
 	}
 
-	TAC* result = NULL;
 	switch (node->type) {
 		case AST_LITERAL:
 			return tac_create(TAC_SYMBOL, node->symbol, NULL, NULL);
@@ -37,9 +36,9 @@ TAC* tac_generate(ASTree *node) {
 
 		/* Assignments */
 		case AST_CMD_VAR_ATTR:
-			result = tac_create(TAC_MOV, children[0]->res, children[1]->res, NULL); break;
+			return tac_join(children[1], tac_create(TAC_MOV, children[0]->res, children[1]->res, NULL));
 		case AST_CMD_ARRAY_ATTR:
-			result = tac_create_array_attribution(children[0], children[1], children[2]); break;
+			return tac_create_array_attribution(children[0], children[1], children[2]);
 
 		/* Control flow */
 		case AST_CMD_WHEN:
@@ -53,42 +52,40 @@ TAC* tac_generate(ASTree *node) {
 
 		/* Binary operations */
 		case AST_EXPR_SUM:
-			result = tac_create_op(TAC_ADD, children[0], children[1]); break;
+			return tac_create_op(TAC_ADD, children[0], children[1]);
 		case AST_EXPR_SUB:
-			result = tac_create_op(TAC_SUB, children[0], children[1]); break;
+			return tac_create_op(TAC_SUB, children[0], children[1]);
 		case AST_EXPR_MULT:
-			result = tac_create_op(TAC_MULT, children[0], children[1]); break;
+			return tac_create_op(TAC_MULT, children[0], children[1]);
 		case AST_EXPR_DIV:
-			result = tac_create_op(TAC_DIV, children[0], children[1]); break;
+			return tac_create_op(TAC_DIV, children[0], children[1]);
 		case AST_EXPR_LESSER:
-			result = tac_create_op(TAC_LESSER,children[0], children[1]); break;
+			return tac_create_op(TAC_LESSER,children[0], children[1]);
 		case AST_EXPR_GREATER:
-			result = tac_create_op(TAC_GREATER,children[0], children[1]); break;
+			return tac_create_op(TAC_GREATER,children[0], children[1]);
 		case AST_EXPR_LESSER_EQ:
-			result = tac_create_op(TAC_LESSER_EQ,children[0], children[1]); break;
+			return tac_create_op(TAC_LESSER_EQ,children[0], children[1]);
 		case AST_EXPR_GREATER_EQ:
-			result = tac_create_op(TAC_GREATER_EQ,children[0], children[1]); break;
+			return tac_create_op(TAC_GREATER_EQ,children[0], children[1]);
 		case AST_EXPR_EQUAL:
-			result = tac_create_op(TAC_EQUAL,children[0], children[1]); break;
+			return tac_create_op(TAC_EQUAL,children[0], children[1]);
 		case AST_EXPR_NOT_EQUAL:
-			result = tac_create_op(TAC_NOT_EQUAL,children[0], children[1]); break;
+			return tac_create_op(TAC_NOT_EQUAL,children[0], children[1]);
 		case AST_EXPR_OR:
-			result = tac_create_op(TAC_OR,children[0], children[1]); break;
+			return tac_create_op(TAC_OR,children[0], children[1]);
 		case AST_EXPR_AND:
-			result = tac_create_op(TAC_AND,children[0], children[1]); break;
+			return tac_create_op(TAC_AND,children[0], children[1]);
 
 		/* Unary operations */
 		case AST_EXPR_NOT:
-			result = tac_create(TAC_NOT, hash_make_temp(), children[0]->res, NULL); break;
+			return tac_join(children[0],tac_create(TAC_NOT, hash_make_temp(), children[0]->res, NULL));
 		case AST_EXPR_NEGATIVE:
-			result = tac_create(TAC_NEGATIVE, hash_make_temp(), children[0]->res, NULL); break;
+			return tac_join(children[0],tac_create(TAC_NEGATIVE, hash_make_temp(), children[0]->res, NULL));
 
 		default:
 			return tac_join(tac_join(tac_join(
 				children[0], children[1]), children[2]), children[3]);
 	}
-	return tac_join(tac_join(tac_join(tac_join(
-				children[0], children[1]), children[2]), children[3]), result);
 }
 
 TAC* tac_create(int type, HashNode *res, HashNode *op1, HashNode *op2) {
@@ -103,11 +100,15 @@ TAC* tac_create(int type, HashNode *res, HashNode *op1, HashNode *op2) {
 }
 
 TAC* tac_create_op(int type, TAC* op1, TAC* op2) {
-	return tac_create(type, hash_make_temp(), op1->res, op2->res);
+	return tac_join(tac_join(op1, op2),
+		tac_create(type, hash_make_temp(), op1->res, op2->res));
 }
 
 TAC* tac_create_array_attribution(TAC* array, TAC* index, TAC* value) {
-	return tac_create(TAC_MOV_OFFSET, array->res, index->res, value->res);
+	TAC* attribution = tac_create(TAC_MOV_OFFSET, array->res, index->res, value->res);
+	return tac_join(tac_join(index, value), attribution);
+
+
 }
 
 TAC* tac_create_array_access(TAC* array, TAC* index) {
