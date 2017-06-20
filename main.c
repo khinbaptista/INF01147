@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
 			exit(5);
 		}
 
-		astree_write_code(output, astree_root);
+		//astree_write_code(output, astree_root);
 		fclose(output);
 
 		fprintf(stderr, "Output written to '%s'\n", argv[2]);

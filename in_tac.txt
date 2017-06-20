@@ -14,10 +14,10 @@ byte main() {
 
 	c = v[3];
 
-	when (1 > a) then ;
+	when (1 > a) then c = 20 else c = 10;
 
 	for (a = 1 to 5) {
-		print a;
+		c = 200;
 	};
 
 	while (a >= 10)

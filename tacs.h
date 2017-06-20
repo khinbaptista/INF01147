@@ -5,23 +5,39 @@
 
 enum tac_types {
 	TAC_UNKNOWN = 0,
-	TAC_LABLE,
+	TAC_LABEL,
 	TAC_SYMBOL,
 	// ...
-
-	TAC_NOT,
-	TAC_AND,
-	TAC_OR,
-	// ...
-
+	/* TAC only ops */
+	TAC_INC,
+	/* Binary Ops */
 	TAC_ADD,
 	TAC_SUB,
 	TAC_MULT,
 	TAC_DIV,
-	// ...
+	TAC_LESSER,
+	TAC_GREATER,
+	TAC_LESSER_EQ,
+	TAC_GREATER_EQ,
+	TAC_EQUAL,
+	TAC_NOT_EQUAL,
+	TAC_OR,
+	TAC_AND,
+	/* Unary Ops */
+	TAC_NOT,
+	TAC_NEGATIVE,
 
+	/* Control flow */
 	TAC_IFZ,
-	TAC_MOV
+	TAC_JMP,
+	TAC_MOV,
+	TAC_FUNC_BEGIN,
+	TAC_FUNC_END,
+	TAC_CALL,
+	TAC_ARG,
+	TAC_RET,
+	TAC_PRINT,
+	TAC_READ,
 	// ...
 };
 
@@ -38,7 +54,6 @@ typedef struct tac {
 TAC* tac_generate(struct astree*);
 
 TAC* tac_create(int type, HashNode*, HashNode*, HashNode*);
-TAC* tac_create_op(int type, HashNode *op1, HashNode *op2);
 
 TAC* tac_join(TAC*, TAC*);
 TAC* tac_reverse(TAC*);
