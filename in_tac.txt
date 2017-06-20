@@ -10,9 +10,10 @@ long soma(long op1, long op2)
 long f() return 1;
 byte main() {
 	print "string";
-	a = soma(10, 10);
+	//a = soma(10, 10);
 
 	c = v[3];
+	v#0 = 1;
 
 	when (1 > a) then c = 20 else c = 10;
 

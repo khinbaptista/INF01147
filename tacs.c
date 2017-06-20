@@ -3,11 +3,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void _tac_print(TAC*);
 TAC* tac_create_op(int type, HashNode *op1, HashNode *op2);
 TAC* tac_create_when(TAC* condition, TAC* cmd);
 TAC* tac_create_when_else(TAC* condition, TAC* when_cmd, TAC* else_cmd);
 TAC* tac_create_while(TAC* condition, TAC* cmd);
 TAC* tac_create_for(TAC* var, TAC* start, TAC* end, TAC* command);
+TAC* tac_create_array_access(TAC* var, TAC* index);
+TAC* tac_create_array_attribution(TAC* var, TAC* index, TAC* value);
 
 TAC* tac_generate(ASTree *node) {
 	if (!node)  {
@@ -19,8 +22,6 @@ TAC* tac_generate(ASTree *node) {
 		children[i] = tac_generate(node->children[i]);
 	}
 
-	TAC *buffer = NULL;
-
 	switch (node->type) {
 		case AST_LITERAL:
 			return tac_create(TAC_SYMBOL, node->symbol, NULL, NULL);
@@ -29,21 +30,14 @@ TAC* tac_generate(ASTree *node) {
 		case AST_EXPR_SCALAR_ACCESS:
 			return tac_create(TAC_SYMBOL, node->symbol, NULL, NULL);
 		case AST_EXPR_ARRAY_ACCESS:
-			return tac_create(TAC_ARRAY_ACCESS, children[0]->res, children[1]->res, NULL);
+			// For some reason, this is not being printed (not added to the list??)
+			return tac_create_array_access(children[0], children[1]);
 
 		/* Assignments */
 		case AST_CMD_VAR_ATTR:
 			return tac_create(TAC_MOV, children[0]->res, children[1]->res, NULL);
 		case AST_CMD_ARRAY_ATTR:
-			// !!!INCOMPLETE!!!!
-			// Children: var, index, value, how to use index?
-			buffer = tac_create(
-				TAC_ARRAY_POS,
-				hash_make_temp(),
-				children[0]->res,	// array
-				children[1]->res	// index
-			);
-			return tac_join(buffer, tac_create(TAC_MOV, buffer->res, children[2]->res, NULL));
+			return tac_create_array_attribution(children[0], children[1], children[2]);
 
 		/* Control flow */
 		case AST_CMD_WHEN:
@@ -173,6 +167,17 @@ TAC* tac_create_for(TAC* var, TAC* start, TAC* end, TAC* command) {
 		label_end);
 }
 
+TAC* tac_create_array_attribution(TAC *var, TAC *index, TAC *value) {
+	TAC *indexed = tac_create(TAC_ARRAY_POS, hash_make_temp(), var->res, index->res);
+	return tac_join(indexed, tac_create(TAC_MOV, indexed->res, value->res, NULL));
+}
+
+TAC* tac_create_array_access(TAC *var, TAC *index) {
+	TAC *res = tac_create(TAC_ARRAY_ACCESS, hash_make_temp(), var->res, index->res);
+	_tac_print(res); fprintf(stderr, "\n");
+	return res;
+}
+
 TAC* tac_join(TAC *tac1, TAC *tac2) {
 	TAC *tac;
 
@@ -196,7 +201,7 @@ TAC* tac_reverse(TAC* tac) {
 }
 
 void _tac_print(TAC *tac) {
-	fprintf(stderr, "TAC(");
+	fprintf(stderr, "TAC (");
 
 	switch (tac->type) {
 		case TAC_SYMBOL:		fprintf(stderr,"SYMBOL");		break;
