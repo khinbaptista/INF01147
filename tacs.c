@@ -19,18 +19,31 @@ TAC* tac_generate(ASTree *node) {
 		children[i] = tac_generate(node->children[i]);
 	}
 
+	TAC *buffer = NULL;
+
 	switch (node->type) {
 		case AST_LITERAL:
 			return tac_create(TAC_SYMBOL, node->symbol, NULL, NULL);
 		case AST_IDENTIFIER:
 			return tac_create(TAC_SYMBOL, node->symbol, NULL, NULL);
+		case AST_EXPR_SCALAR_ACCESS:
+			return tac_create(TAC_SYMBOL, node->symbol, NULL, NULL);
+		case AST_EXPR_ARRAY_ACCESS:
+			return tac_create(TAC_ARRAY_ACCESS, children[0]->res, children[1]->res, NULL);
+
 		/* Assignments */
 		case AST_CMD_VAR_ATTR:
 			return tac_create(TAC_MOV, children[0]->res, children[1]->res, NULL);
 		case AST_CMD_ARRAY_ATTR:
 			// !!!INCOMPLETE!!!!
 			// Children: var, index, value, how to use index?
-			return tac_create(TAC_MOV, children[0]->res, children[1]->res, NULL);
+			buffer = tac_create(
+				TAC_ARRAY_POS,
+				hash_make_temp(),
+				children[0]->res,	// array
+				children[1]->res	// index
+			);
+			return tac_join(buffer, tac_create(TAC_MOV, buffer->res, children[2]->res, NULL));
 
 		/* Control flow */
 		case AST_CMD_WHEN:
@@ -105,6 +118,7 @@ TAC* tac_create_when(TAC* condition, TAC* cmd) {
 		cmd),
 		label);
 }
+
 TAC* tac_create_when_else(TAC* condition, TAC* when_cmd, TAC* else_cmd) {
 	HashNode* hash_label_else = hash_make_label();
 	HashNode* hash_label_end = hash_make_label();
@@ -121,6 +135,7 @@ TAC* tac_create_when_else(TAC* condition, TAC* when_cmd, TAC* else_cmd) {
 		else_cmd),
 		label_end);
 }
+
 TAC* tac_create_while(TAC* condition, TAC* cmd) {
 	HashNode* hash_label_start = hash_make_label();
 	HashNode* hash_label_skip = hash_make_label();
@@ -136,6 +151,7 @@ TAC* tac_create_while(TAC* condition, TAC* cmd) {
 		jump_start),
 		label_skip);
 }
+
 TAC* tac_create_for(TAC* var, TAC* start, TAC* end, TAC* command) {
 	TAC* init_var = tac_create(TAC_MOV, var->res, start->res, NULL);
 	HashNode* hash_label_start = hash_make_label();
@@ -183,14 +199,14 @@ void _tac_print(TAC *tac) {
 	fprintf(stderr, "TAC(");
 
 	switch (tac->type) {
-		case TAC_SYMBOL:		fprintf(stderr, "SYMBOL");		break;
-		case TAC_LABEL:			fprintf(stderr, "LABEL");		break;
-		case TAC_MOV:			fprintf(stderr, "MOV");			break;
-		case TAC_INC:			fprintf(stderr, "INC");			break;
-		case TAC_ADD:			fprintf(stderr, "ADD");			break;
-		case TAC_SUB:			fprintf(stderr, "SUB");			break;
-		case TAC_MULT:			fprintf(stderr, "MULT");		break;
-		case TAC_DIV:			fprintf(stderr, "DIV");			break;
+		case TAC_SYMBOL:		fprintf(stderr,"SYMBOL");		break;
+		case TAC_LABEL:			fprintf(stderr,"LABEL");		break;
+		case TAC_MOV:			fprintf(stderr,"MOV");			break;
+		case TAC_INC:			fprintf(stderr,"INC");			break;
+		case TAC_ADD:			fprintf(stderr,"ADD");			break;
+		case TAC_SUB:			fprintf(stderr,"SUB");			break;
+		case TAC_MULT:			fprintf(stderr,"MULT");			break;
+		case TAC_DIV:			fprintf(stderr,"DIV");			break;
 		case TAC_LESSER:		fprintf(stderr,"LESSER"); 		break;
 		case TAC_GREATER:		fprintf(stderr,"GREATER"); 		break;
 		case TAC_LESSER_EQ:		fprintf(stderr,"LESSER_EQ"); 	break;
@@ -203,7 +219,9 @@ void _tac_print(TAC *tac) {
 		case TAC_NEGATIVE:		fprintf(stderr,"NEGATIVE"); 	break;
 		case TAC_IFZ:			fprintf(stderr,"IFZ");			break;
 		case TAC_JMP:			fprintf(stderr,"JMP");			break;
-		default:				fprintf(stderr, "UNKNOWN");		break;
+		case TAC_ARRAY_POS:		fprintf(stderr,"ARRAY_POS");	break;
+		case TAC_ARRAY_ACCESS:	fprintf(stderr,"ARRAY_ACCESS");	break;
+		default:				fprintf(stderr,"UNKNOWN");		break;
 	}
 
 	if (tac->res)	fprintf(stderr, ", %s", tac->res->text);

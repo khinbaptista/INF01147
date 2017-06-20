@@ -7,9 +7,14 @@ enum tac_types {
 	TAC_UNKNOWN = 0,
 	TAC_LABEL,
 	TAC_SYMBOL,
-	// ...
+
+	/* Arrays */
+	TAC_ARRAY_POS,		// helper for array attribution
+	TAC_ARRAY_ACCESS,
+
 	/* TAC only ops */
 	TAC_INC,
+
 	/* Binary Ops */
 	TAC_ADD,
 	TAC_SUB,
@@ -23,6 +28,7 @@ enum tac_types {
 	TAC_NOT_EQUAL,
 	TAC_OR,
 	TAC_AND,
+
 	/* Unary Ops */
 	TAC_NOT,
 	TAC_NEGATIVE,
@@ -38,7 +44,6 @@ enum tac_types {
 	TAC_RET,
 	TAC_PRINT,
 	TAC_READ,
-	// ...
 };
 
 typedef struct tac {
