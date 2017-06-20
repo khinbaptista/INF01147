@@ -11,8 +11,8 @@ long f() return 1;
 byte main() {
 	print "string";
 	a = soma(10, 10);
-
-	c = v[3];
+	v#2 = 10;
+	c = v[3] + 20 * 10;
 
 	when (1 > a) then c = 20 else c = 10;
 

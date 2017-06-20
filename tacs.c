@@ -3,7 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-TAC* tac_create_op(int type, HashNode *op1, HashNode *op2);
+TAC* tac_create_op(int type, TAC* op1, TAC* op2);
+TAC* tac_create_array_access(TAC* array, TAC* index);
+TAC* tac_create_array_attr(TAC* array, TAC* index, TAC* value);
 TAC* tac_create_when(TAC* condition, TAC* cmd);
 TAC* tac_create_when_else(TAC* condition, TAC* when_cmd, TAC* else_cmd);
 TAC* tac_create_while(TAC* condition, TAC* cmd);
@@ -18,9 +20,7 @@ TAC* tac_generate(ASTree *node) {
 	for (int i = 0; i < MAX_CHILDREN; i++) {
 		children[i] = tac_generate(node->children[i]);
 	}
-
-	TAC *buffer = NULL;
-
+	TAC* result = NULL;
 	switch (node->type) {
 		case AST_LITERAL:
 			return tac_create(TAC_SYMBOL, node->symbol, NULL, NULL);
@@ -29,21 +29,13 @@ TAC* tac_generate(ASTree *node) {
 		case AST_EXPR_SCALAR_ACCESS:
 			return tac_create(TAC_SYMBOL, node->symbol, NULL, NULL);
 		case AST_EXPR_ARRAY_ACCESS:
-			return tac_create(TAC_ARRAY_ACCESS, children[0]->res, children[1]->res, NULL);
+			return tac_create_array_access(children[0], children[1]);
 
 		/* Assignments */
 		case AST_CMD_VAR_ATTR:
-			return tac_create(TAC_MOV, children[0]->res, children[1]->res, NULL);
+			result = tac_create(TAC_MOV, children[0]->res, children[1]->res, NULL); break;
 		case AST_CMD_ARRAY_ATTR:
-			// !!!INCOMPLETE!!!!
-			// Children: var, index, value, how to use index?
-			buffer = tac_create(
-				TAC_ARRAY_POS,
-				hash_make_temp(),
-				children[0]->res,	// array
-				children[1]->res	// index
-			);
-			return tac_join(buffer, tac_create(TAC_MOV, buffer->res, children[2]->res, NULL));
+			result = tac_create_array_attr(children[0], children[1], children[2]); break;
 
 		/* Control flow */
 		case AST_CMD_WHEN:
@@ -57,40 +49,42 @@ TAC* tac_generate(ASTree *node) {
 
 		/* Binary operations */
 		case AST_EXPR_SUM:
-			return tac_create_op(TAC_ADD, children[0]->res, children[1]->res);
+			result = tac_create_op(TAC_ADD, children[0], children[1]); break;
 		case AST_EXPR_SUB:
-			return tac_create_op(TAC_SUB, children[0]->res, children[1]->res);
+			result = tac_create_op(TAC_SUB, children[0], children[1]); break;
 		case AST_EXPR_MULT:
-			return tac_create_op(TAC_MULT, children[0]->res, children[1]->res);
+			result = tac_create_op(TAC_MULT, children[0], children[1]); break;
 		case AST_EXPR_DIV:
-			return tac_create_op(TAC_DIV, children[0]->res, children[1]->res);
+			result = tac_create_op(TAC_DIV, children[0], children[1]); break;
 		case AST_EXPR_LESSER:
-			return tac_create_op(TAC_LESSER,children[0]->res, children[1]->res);
+			result = tac_create_op(TAC_LESSER,children[0], children[1]); break;
 		case AST_EXPR_GREATER:
-			return tac_create_op(TAC_GREATER,children[0]->res, children[1]->res);
+			result = tac_create_op(TAC_GREATER,children[0], children[1]); break;
 		case AST_EXPR_LESSER_EQ:
-			return tac_create_op(TAC_LESSER_EQ,children[0]->res, children[1]->res);
+			result = tac_create_op(TAC_LESSER_EQ,children[0], children[1]); break;
 		case AST_EXPR_GREATER_EQ:
-			return tac_create_op(TAC_GREATER_EQ,children[0]->res, children[1]->res);
+			result = tac_create_op(TAC_GREATER_EQ,children[0], children[1]); break;
 		case AST_EXPR_EQUAL:
-			return tac_create_op(TAC_EQUAL,children[0]->res, children[1]->res);
+			result = tac_create_op(TAC_EQUAL,children[0], children[1]); break;
 		case AST_EXPR_NOT_EQUAL:
-			return tac_create_op(TAC_NOT_EQUAL,children[0]->res, children[1]->res);
+			result = tac_create_op(TAC_NOT_EQUAL,children[0], children[1]); break;
 		case AST_EXPR_OR:
-			return tac_create_op(TAC_OR,children[0]->res, children[1]->res);
+			result = tac_create_op(TAC_OR,children[0], children[1]); break;
 		case AST_EXPR_AND:
-			return tac_create_op(TAC_AND,children[0]->res, children[1]->res);
+			result = tac_create_op(TAC_AND,children[0], children[1]); break;
 
 		/* Unary operations */
 		case AST_EXPR_NOT:
-			return tac_create(TAC_NOT, hash_make_temp(), children[0]->res, NULL);
+			result = tac_create(TAC_NOT, hash_make_temp(), children[0]->res, NULL); break;
 		case AST_EXPR_NEGATIVE:
-			return tac_create(TAC_NEGATIVE, hash_make_temp(), children[0]->res, NULL);
+			result = tac_create(TAC_NEGATIVE, hash_make_temp(), children[0]->res, NULL); break;
 
 		default:
 			return tac_join(tac_join(tac_join(
 				children[0], children[1]), children[2]), children[3]);
 	}
+	return tac_join(tac_join(tac_join(tac_join(
+				children[0], children[1]), children[2]), children[3]), result);
 }
 
 TAC* tac_create(int type, HashNode *res, HashNode *op1, HashNode *op2) {
@@ -104,8 +98,16 @@ TAC* tac_create(int type, HashNode *res, HashNode *op1, HashNode *op2) {
 	return tac;
 }
 
-TAC* tac_create_op(int type, HashNode *op1, HashNode *op2) {
-	return tac_create(type, hash_make_temp(), op1, op2);
+TAC* tac_create_op(int type, TAC* op1, TAC* op2) {
+	return tac_create(type, hash_make_temp(), op1->res, op2->res);
+}
+
+TAC* tac_create_array_attr(TAC* array, TAC* index, TAC* value) {
+	return tac_create(TAC_MOV_OFFSET, array->res, index->res, value->res);
+}
+
+TAC* tac_create_array_access(TAC* array, TAC* index) {
+	return tac_create(TAC_ARRAY_ACCESS, hash_make_temp(), array->res, index->res);
 }
 
 TAC* tac_create_when(TAC* condition, TAC* cmd) {
@@ -158,7 +160,7 @@ TAC* tac_create_for(TAC* var, TAC* start, TAC* end, TAC* command) {
 	TAC* label_start = tac_create(TAC_LABEL, hash_label_start, NULL, NULL);
 	HashNode* hash_label_end = hash_make_label();
 	TAC* label_end = tac_create(TAC_LABEL, hash_label_end, NULL, NULL);
-	TAC* test_var = tac_create_op(TAC_LESSER_EQ, var->res, end->res);
+	TAC* test_var = tac_create_op(TAC_LESSER_EQ, var, end);
 	TAC* jump_to_end = tac_create(TAC_IFZ, hash_label_end, test_var->res, NULL);
 	TAC* increment_var = tac_create(TAC_INC, var->res, NULL, NULL);
 	TAC* jump_to_test = tac_create(TAC_JMP, hash_label_start, NULL, NULL);
@@ -202,6 +204,7 @@ void _tac_print(TAC *tac) {
 		case TAC_SYMBOL:		fprintf(stderr,"SYMBOL");		break;
 		case TAC_LABEL:			fprintf(stderr,"LABEL");		break;
 		case TAC_MOV:			fprintf(stderr,"MOV");			break;
+		case TAC_MOV_OFFSET:	fprintf(stderr,"MOV_OFFSET");	break;
 		case TAC_INC:			fprintf(stderr,"INC");			break;
 		case TAC_ADD:			fprintf(stderr,"ADD");			break;
 		case TAC_SUB:			fprintf(stderr,"SUB");			break;

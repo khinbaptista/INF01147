@@ -14,6 +14,8 @@ enum tac_types {
 
 	/* TAC only ops */
 	TAC_INC,
+	TAC_MOV,
+	TAC_MOV_OFFSET,
 
 	/* Binary Ops */
 	TAC_ADD,
@@ -33,10 +35,9 @@ enum tac_types {
 	TAC_NOT,
 	TAC_NEGATIVE,
 
-	/* Control flow */
+	/* Commands */
 	TAC_IFZ,
 	TAC_JMP,
-	TAC_MOV,
 	TAC_FUNC_BEGIN,
 	TAC_FUNC_END,
 	TAC_CALL,
