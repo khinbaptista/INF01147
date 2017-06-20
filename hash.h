@@ -54,6 +54,6 @@ void hash_declare(int datatype, int id_type, HashNode* symbol);
 void hash_declare_function(int datatype, HashNode* symbol, struct astree* params);
 
 HashNode* hash_make_temp();
-HashNode* has_make_label();
+HashNode* hash_make_label();
 
 void hash_print();
