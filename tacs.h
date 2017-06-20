@@ -8,14 +8,11 @@ enum tac_types {
 	TAC_LABEL,
 	TAC_SYMBOL,
 
-	/* Arrays */
-	TAC_ARRAY_POS,		// helper for array attribution
-	TAC_ARRAY_ACCESS,
-
-	/* TAC only ops */
+		/* TAC only ops */
 	TAC_INC,
 	TAC_MOV,
 	TAC_MOV_OFFSET,
+	TAC_ACCESS_OFFSET,
 
 	/* Binary Ops */
 	TAC_ADD,

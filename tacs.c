@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void _tac_print(TAC*);
 TAC* tac_create_op(int type, TAC* op1, TAC* op2);
 TAC* tac_create_array_access(TAC* array, TAC* index);
 TAC* tac_create_array_attr(TAC* array, TAC* index, TAC* value);
@@ -10,6 +11,8 @@ TAC* tac_create_when(TAC* condition, TAC* cmd);
 TAC* tac_create_when_else(TAC* condition, TAC* when_cmd, TAC* else_cmd);
 TAC* tac_create_while(TAC* condition, TAC* cmd);
 TAC* tac_create_for(TAC* var, TAC* start, TAC* end, TAC* command);
+TAC* tac_create_array_access(TAC* var, TAC* index);
+TAC* tac_create_array_attribution(TAC* var, TAC* index, TAC* value);
 
 TAC* tac_generate(ASTree *node) {
 	if (!node)  {
@@ -20,6 +23,7 @@ TAC* tac_generate(ASTree *node) {
 	for (int i = 0; i < MAX_CHILDREN; i++) {
 		children[i] = tac_generate(node->children[i]);
 	}
+
 	TAC* result = NULL;
 	switch (node->type) {
 		case AST_LITERAL:
@@ -35,7 +39,7 @@ TAC* tac_generate(ASTree *node) {
 		case AST_CMD_VAR_ATTR:
 			result = tac_create(TAC_MOV, children[0]->res, children[1]->res, NULL); break;
 		case AST_CMD_ARRAY_ATTR:
-			result = tac_create_array_attr(children[0], children[1], children[2]); break;
+			result = tac_create_array_attribution(children[0], children[1], children[2]); break;
 
 		/* Control flow */
 		case AST_CMD_WHEN:
@@ -102,12 +106,12 @@ TAC* tac_create_op(int type, TAC* op1, TAC* op2) {
 	return tac_create(type, hash_make_temp(), op1->res, op2->res);
 }
 
-TAC* tac_create_array_attr(TAC* array, TAC* index, TAC* value) {
+TAC* tac_create_array_attribution(TAC* array, TAC* index, TAC* value) {
 	return tac_create(TAC_MOV_OFFSET, array->res, index->res, value->res);
 }
 
 TAC* tac_create_array_access(TAC* array, TAC* index) {
-	return tac_create(TAC_ARRAY_ACCESS, hash_make_temp(), array->res, index->res);
+	return tac_create(TAC_ACCESS_OFFSET, hash_make_temp(), array->res, index->res);
 }
 
 TAC* tac_create_when(TAC* condition, TAC* cmd) {
@@ -175,6 +179,7 @@ TAC* tac_create_for(TAC* var, TAC* start, TAC* end, TAC* command) {
 		label_end);
 }
 
+
 TAC* tac_join(TAC *tac1, TAC *tac2) {
 	TAC *tac;
 
@@ -198,13 +203,14 @@ TAC* tac_reverse(TAC* tac) {
 }
 
 void _tac_print(TAC *tac) {
-	fprintf(stderr, "TAC(");
+	fprintf(stderr, "TAC (");
 
 	switch (tac->type) {
 		case TAC_SYMBOL:		fprintf(stderr,"SYMBOL");		break;
 		case TAC_LABEL:			fprintf(stderr,"LABEL");		break;
 		case TAC_MOV:			fprintf(stderr,"MOV");			break;
 		case TAC_MOV_OFFSET:	fprintf(stderr,"MOV_OFFSET");	break;
+		case TAC_ACCESS_OFFSET:	fprintf(stderr,"ACCESS_OFFSET");	break;
 		case TAC_INC:			fprintf(stderr,"INC");			break;
 		case TAC_ADD:			fprintf(stderr,"ADD");			break;
 		case TAC_SUB:			fprintf(stderr,"SUB");			break;
@@ -222,8 +228,6 @@ void _tac_print(TAC *tac) {
 		case TAC_NEGATIVE:		fprintf(stderr,"NEGATIVE"); 	break;
 		case TAC_IFZ:			fprintf(stderr,"IFZ");			break;
 		case TAC_JMP:			fprintf(stderr,"JMP");			break;
-		case TAC_ARRAY_POS:		fprintf(stderr,"ARRAY_POS");	break;
-		case TAC_ARRAY_ACCESS:	fprintf(stderr,"ARRAY_ACCESS");	break;
 		default:				fprintf(stderr,"UNKNOWN");		break;
 	}
 

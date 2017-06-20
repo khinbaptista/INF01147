@@ -14,6 +14,9 @@ byte main() {
 	v#2 = 10;
 	c = v[3] + 20 * 10;
 
+	c = v[3];
+	v#0 = 1;
+
 	when (1 > a) then c = 20 else c = 10;
 
 	for (a = 1 to 5) {
