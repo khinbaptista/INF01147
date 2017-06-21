@@ -4,7 +4,10 @@
 #include <stdlib.h>
 
 void _tac_print(TAC*);
-TAC* tac_create_op(int type, TAC* op1, TAC* op2);
+TAC* tac_create_numeric_op(int type, TAC* op1, TAC* op2);
+TAC* tac_create_bool_op(int type, TAC* op1, TAC* op2);
+TAC* tac_create_not(TAC* op);
+TAC* tac_create_negative(TAC* op);
 TAC* tac_create_var_attribution(TAC* var, TAC* value);
 TAC* tac_create_array_decl(ASTree* node);
 TAC* tac_create_array_access(TAC* var, TAC* index);
@@ -77,35 +80,35 @@ TAC* tac_generate(ASTree* node) {
 			return tac_create_cmd_print(children[0], children[1]);
 		/* Binary operations */
 		case AST_EXPR_SUM:
-			return tac_create_op(TAC_ADD, children[0], children[1]);
+			return tac_create_numeric_op(TAC_ADD, children[0], children[1]);
 		case AST_EXPR_SUB:
-			return tac_create_op(TAC_SUB, children[0], children[1]);
+			return tac_create_numeric_op(TAC_SUB, children[0], children[1]);
 		case AST_EXPR_MULT:
-			return tac_create_op(TAC_MULT, children[0], children[1]);
+			return tac_create_numeric_op(TAC_MULT, children[0], children[1]);
 		case AST_EXPR_DIV:
-			return tac_create_op(TAC_DIV, children[0], children[1]);
+			return tac_create_numeric_op(TAC_DIV, children[0], children[1]);
 		case AST_EXPR_LESSER:
-			return tac_create_op(TAC_LESSER,children[0], children[1]);
+			return tac_create_bool_op(TAC_LESSER,children[0], children[1]);
 		case AST_EXPR_GREATER:
-			return tac_create_op(TAC_GREATER,children[0], children[1]);
+			return tac_create_bool_op(TAC_GREATER,children[0], children[1]);
 		case AST_EXPR_LESSER_EQ:
-			return tac_create_op(TAC_LESSER_EQ,children[0], children[1]);
+			return tac_create_bool_op(TAC_LESSER_EQ,children[0], children[1]);
 		case AST_EXPR_GREATER_EQ:
-			return tac_create_op(TAC_GREATER_EQ,children[0], children[1]);
+			return tac_create_bool_op(TAC_GREATER_EQ,children[0], children[1]);
 		case AST_EXPR_EQUAL:
-			return tac_create_op(TAC_EQUAL,children[0], children[1]);
+			return tac_create_bool_op(TAC_EQUAL,children[0], children[1]);
 		case AST_EXPR_NOT_EQUAL:
-			return tac_create_op(TAC_NOT_EQUAL,children[0], children[1]);
+			return tac_create_bool_op(TAC_NOT_EQUAL,children[0], children[1]);
 		case AST_EXPR_OR:
-			return tac_create_op(TAC_OR,children[0], children[1]);
+			return tac_create_bool_op(TAC_OR,children[0], children[1]);
 		case AST_EXPR_AND:
-			return tac_create_op(TAC_AND,children[0], children[1]);
+			return tac_create_bool_op(TAC_AND,children[0], children[1]);
 
 		/* Unary operations */
 		case AST_EXPR_NOT:
-			return tac_join(children[0],tac_create(TAC_NOT, hash_make_temp(), children[0]->res, NULL));
+			return tac_create_not(children[0]);
 		case AST_EXPR_NEGATIVE:
-			return tac_join(children[0],tac_create(TAC_NEGATIVE, hash_make_temp(), children[0]->res, NULL));
+			return tac_create_negative(children[0]);
 
 		default:
 			return tac_join(tac_join(tac_join(
@@ -124,15 +127,32 @@ TAC* tac_create(int type, HashNode *res, HashNode *op1, HashNode *op2) {
 	return tac;
 }
 
-TAC* tac_create_op(int type, TAC* op1, TAC* op2) {
+TAC* tac_create_numeric_op(int type, TAC* op1, TAC* op2) {
+	int datatype = get_operation_datatype(op1->res->datatype, op2->res->datatype);
 	return tac_join(tac_join(op1, op2),
-		tac_create(type, hash_make_temp(), op1->res, op2->res));
+		tac_create(type, hash_make_temp(datatype), op1->res, op2->res));
+}
+
+TAC* tac_create_bool_op(int type, TAC* op1, TAC* op2) {
+	return tac_join(tac_join(op1, op2),
+		tac_create(type, hash_make_temp(HASH_TYPE_BOOL), op1->res, op2->res));
+}
+
+TAC* tac_create_not(TAC* op) {
+	return tac_join(op,
+		tac_create(TAC_NOT, hash_make_temp(HASH_TYPE_BOOL), op->res, NULL));
+}
+
+TAC* tac_create_negative(TAC* op) {
+	return tac_join(op,
+		tac_create(TAC_NEGATIVE, hash_make_temp(op->res->datatype), op->res, NULL));
 }
 
 TAC* tac_create_var_attribution(TAC* var, TAC* value) {
 	return tac_join(tac_join(var,value),
 		tac_create(TAC_MOV, var->res, value->res, NULL));
 }
+
 TAC* tac_create_array_decl(ASTree* node) {
 	if(node->children[3]) {
 		int array_length = atoi(node->children[2]->symbol->text);
@@ -155,6 +175,7 @@ TAC* tac_create_array_decl(ASTree* node) {
 		return NULL;
 	}
 }
+
 TAC* tac_create_array_attribution(TAC* array, TAC* index, TAC* value) {
 	TAC* attribution = tac_create(TAC_MOV_OFFSET, array->res, index->res, value->res);
 	return tac_join(tac_join(index, value), attribution);
@@ -166,7 +187,7 @@ TAC* tac_create_array_access(TAC* array, TAC* index) {
 		index),
 		tac_create(
 			TAC_ACCESS_OFFSET,
-			hash_make_temp(),
+			hash_make_temp(array->res->datatype),
 			array->res,
 			index->res));
 }
@@ -185,7 +206,7 @@ TAC* tac_create_function_call(ASTree* node){
 		// Point list to next element
 		list = list->children[0];
 	}
-	TAC* call = tac_create(TAC_FUNC_CALL, hash_make_temp(), function, NULL);
+	TAC* call = tac_create(TAC_FUNC_CALL, hash_make_temp(function->datatype), function, NULL);
 	return tac_join(arg_list,call);
 }
 TAC* tac_create_function_arg(ASTree* arg, HashNode* function, int arg_number) {
@@ -255,7 +276,7 @@ TAC* tac_create_for(TAC* var, TAC* start, TAC* end, TAC* command) {
 	TAC* label_start = tac_create(TAC_LABEL, hash_label_start, NULL, NULL);
 	HashNode* hash_label_end = hash_make_label();
 	TAC* label_end = tac_create(TAC_LABEL, hash_label_end, NULL, NULL);
-	TAC* test_var = tac_create_op(TAC_LESSER_EQ, var, end);
+	TAC* test_var = tac_create_bool_op(TAC_LESSER_EQ, var, end);
 	TAC* jump_to_end = tac_create(TAC_IFZ, hash_label_end, test_var->res, NULL);
 	TAC* increment_var = tac_create(TAC_INC, var->res, NULL, NULL);
 	TAC* jump_to_test = tac_create(TAC_JMP, hash_label_start, NULL, NULL);
@@ -340,11 +361,11 @@ void _tac_print(TAC *tac) {
 		default:				fprintf(stderr,"UNKNOWN");		break;
 	}
 
-	if (tac->res)	fprintf(stderr, ", %s", tac->res->text);
+	if (tac->res)	fprintf(stderr, " %s", tac->res->text);
 	//else			fprintf(stderr, ", NULL");
-	if (tac->op1)	fprintf(stderr, ", %s", tac->op1->text);
+	if (tac->op1)	fprintf(stderr, " %s", tac->op1->text);
 	//else			fprintf(stderr, ", NULL");
-	if (tac->op2)	fprintf(stderr, ", %s", tac->op2->text);
+	if (tac->op2)	fprintf(stderr, " %s", tac->op2->text);
 	//else			fprintf(stderr, ", NULL");
 
 	fprintf(stderr, "\n");

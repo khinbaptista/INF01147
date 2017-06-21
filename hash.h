@@ -15,7 +15,9 @@ enum hash_symbol_type {
 	SYMBOL_LIT_INTEGER,
 	SYMBOL_LIT_REAL,
 	SYMBOL_LIT_CHAR,
-	SYMBOL_LIT_STRING
+	SYMBOL_LIT_STRING,
+	SYMBOL_TEMP,
+	SYMBOL_LABEL
 };
 
 enum hash_identifier_type {
@@ -28,6 +30,7 @@ enum hash_identifier_type {
 enum hash_datatype {
 	HASH_TYPE_UNDEFINED,
 	HASH_TYPE_STRING,
+	HASH_TYPE_BOOL,
 	HASH_TYPE_BYTE,
 	HASH_TYPE_SHORT,
 	HASH_TYPE_LONG,
@@ -53,7 +56,10 @@ HashNode* hash_insert(int type, char* text);
 void hash_declare(int datatype, int id_type, HashNode* symbol);
 void hash_declare_function(int datatype, HashNode* symbol, struct astree* params);
 
-HashNode* hash_make_temp();
+HashNode* hash_make_temp(int datatype);
 HashNode* hash_make_label();
 
 void hash_print();
+
+int numeric_hash_datatype(int type);
+int get_operation_hash_datatype(int left, int right);

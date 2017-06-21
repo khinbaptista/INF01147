@@ -61,19 +61,19 @@ HashNode* hash_insert(int type, char* text) {
 			node->datatype = HASH_TYPE_UNDEFINED;
 			break;
 		case SYMBOL_LIT_INTEGER:
-			node->id_type = ID_UNDEFINED;
+			node->id_type = ID_SCALAR;
 			node->datatype = HASH_TYPE_SHORT;
 			break;
 		case SYMBOL_LIT_REAL:
-			node->id_type = ID_UNDEFINED;
+			node->id_type = ID_SCALAR;
 			node->datatype = HASH_TYPE_FLOAT;
 			break;
 		case SYMBOL_LIT_CHAR:
-			node->id_type = ID_UNDEFINED;
+			node->id_type = ID_SCALAR;
 			node->datatype = HASH_TYPE_BYTE;
 			break;
 		case SYMBOL_LIT_STRING:
-			node->id_type = ID_UNDEFINED;
+			node->id_type = ID_SCALAR;
 			node->datatype = HASH_TYPE_STRING;
 			break;
 	}
@@ -86,7 +86,7 @@ HashNode* hash_insert(int type, char* text) {
 	return node;
 }
 
-HashNode* hash_make_temp() {
+HashNode* hash_make_temp(int datatype) {
 	static int serial_number = 1;
 	static char buffer[128];
 	size_t length = 0;
@@ -101,6 +101,10 @@ HashNode* hash_make_temp() {
 	int address = hash_address(buffer);
 	temp->next = _table[address];
 	_table[address] = temp;
+
+	temp->type = SYMBOL_TEMP;
+	temp->id_type = ID_UNDEFINED;
+	temp->datatype = datatype;
 
 	return temp;
 }
@@ -121,6 +125,10 @@ HashNode* hash_make_label() {
 	label->next = _table[address];
 	_table[address] = label;
 
+	label->type = SYMBOL_LABEL;
+	label->id_type = ID_UNDEFINED;
+	label->datatype = HASH_TYPE_UNDEFINED;
+
 	return label;
 }
 
@@ -130,5 +138,22 @@ void hash_print() {
 		if (_table[i]) {
 			fprintf(stderr, "Hash[ %d ] =\t%s\n", i, _table[i]->text);
 		}
+	}
+}
+
+int numeric_hash_datatype(int type) {
+	return type >= HASH_TYPE_BYTE;
+}
+
+int get_operation_hash_datatype(int left, int right) {
+	if(numeric_hash_datatype(left) && numeric_hash_datatype(right)) {
+		// Datatypes are an enum, larger values have more bits/precision
+		if(left >= right) {
+			return left;
+		} else {
+			return right;
+		}
+	} else {
+		return HASH_TYPE_BYTE;
 	}
 }
