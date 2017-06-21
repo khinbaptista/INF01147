@@ -5,8 +5,10 @@
 
 void _tac_print(TAC*);
 TAC* tac_create_op(int type, TAC* op1, TAC* op2);
-TAC* tac_create_array_access(TAC* array, TAC* index);
-TAC* tac_create_array_attr(TAC* array, TAC* index, TAC* value);
+TAC* tac_create_var_attribution(TAC* var, TAC* value);
+TAC* tac_create_array_decl(ASTree* node);
+TAC* tac_create_array_access(TAC* var, TAC* index);
+TAC* tac_create_array_attribution(TAC* var, TAC* index, TAC* value);
 TAC* tac_create_function_call(ASTree* node);
 TAC* tac_create_function_arg(ASTree* arg, HashNode* function, int arg_number);
 TAC* tac_create_function_declaration(HashNode* function, TAC* body);
@@ -17,8 +19,6 @@ TAC* tac_create_while(TAC* condition, TAC* cmd);
 TAC* tac_create_for(TAC* var, TAC* start, TAC* end, TAC* command);
 TAC* tac_create_cmd_read(TAC* var);
 TAC* tac_create_cmd_print(TAC* prev_arg, TAC* curr_arg);
-TAC* tac_create_array_access(TAC* var, TAC* index);
-TAC* tac_create_array_attribution(TAC* var, TAC* index, TAC* value);
 
 TAC* tac_generate(ASTree* node) {
 	if (!node)  {
@@ -26,7 +26,7 @@ TAC* tac_generate(ASTree* node) {
 	}
 
 	TAC *children[MAX_CHILDREN];
-	if(node->type != AST_FUNC_CALL) {
+	if(node->type != AST_FUNC_CALL || node->type != AST_ARRAY_DECL) {
 		// Recursion happens before current node except for cases above
 		for (int i = 0; i < MAX_CHILDREN; i++) {
 			children[i] = tac_generate(node->children[i]);
@@ -43,12 +43,15 @@ TAC* tac_generate(ASTree* node) {
 		case AST_EXPR_ARRAY_ACCESS:
 			return tac_create_array_access(children[0], children[1]);
 
-		/* Assignments */
+		/* Variables */
 		case AST_CMD_VAR_ATTR:
-			return tac_join(children[1], tac_create(TAC_MOV, children[0]->res, children[1]->res, NULL));
+			return tac_create_var_attribution(children[0], children[1]);
 		case AST_CMD_ARRAY_ATTR:
 			return tac_create_array_attribution(children[0], children[1], children[2]);
-
+		case AST_VAR_DECL:
+			return tac_create_var_attribution(children[0], children[2]);
+		case AST_ARRAY_DECL:
+			return tac_create_array_decl(node);
 		/* Functions */
 		case AST_FUNC_CALL:
 			return tac_create_function_call(node);
@@ -126,6 +129,32 @@ TAC* tac_create_op(int type, TAC* op1, TAC* op2) {
 		tac_create(type, hash_make_temp(), op1->res, op2->res));
 }
 
+TAC* tac_create_var_attribution(TAC* var, TAC* value) {
+	return tac_join(tac_join(var,value),
+		tac_create(TAC_MOV, var->res, value->res, NULL));
+}
+TAC* tac_create_array_decl(ASTree* node) {
+	if(node->children[3]) {
+		int array_length = atoi(node->children[2]->symbol->text);
+		HashNode* array = node->children[0]->symbol;
+		ASTree* init_list = node->children[3];
+		TAC* tac_list = NULL;
+		char* position = calloc(17, sizeof(char));
+		for(int i = array_length - 1; i >= 0; --i) {
+			HashNode* value = init_list->children[1]->symbol;
+			sprintf(position, "%d", i);
+			HashNode* index = hash_insert(SYMBOL_LIT_INTEGER, position);
+			tac_list = tac_join(
+				tac_create(TAC_MOV_OFFSET, array, index, value),
+				tac_list
+			);
+			init_list = init_list->children[0];
+		}
+		return tac_list;
+	} else {
+		return NULL;
+	}
+}
 TAC* tac_create_array_attribution(TAC* array, TAC* index, TAC* value) {
 	TAC* attribution = tac_create(TAC_MOV_OFFSET, array->res, index->res, value->res);
 	return tac_join(tac_join(index, value), attribution);
