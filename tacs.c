@@ -15,6 +15,8 @@ TAC* tac_create_when(TAC* condition, TAC* cmd);
 TAC* tac_create_when_else(TAC* condition, TAC* when_cmd, TAC* else_cmd);
 TAC* tac_create_while(TAC* condition, TAC* cmd);
 TAC* tac_create_for(TAC* var, TAC* start, TAC* end, TAC* command);
+TAC* tac_create_cmd_read(TAC* var);
+TAC* tac_create_cmd_print(TAC* prev_arg, TAC* curr_arg);
 TAC* tac_create_array_access(TAC* var, TAC* index);
 TAC* tac_create_array_attribution(TAC* var, TAC* index, TAC* value);
 
@@ -54,6 +56,7 @@ TAC* tac_generate(ASTree* node) {
 			return tac_create_function_declaration(node->children[1]->symbol, children[3]);
 		case AST_CMD_RETURN:
 			return tac_create_function_return(children[0]);
+
 		/* Control flow */
 		case AST_CMD_WHEN:
 			return tac_create_when(children[0], children[1]);
@@ -64,6 +67,11 @@ TAC* tac_generate(ASTree* node) {
 		case AST_CMD_FOR:
 			return tac_create_for(children[0], children[1], children[2], children[3]);
 
+		/* IO */
+		case AST_CMD_READ:
+			return tac_create_cmd_read(children[0]);
+		case AST_PRINT_ARGS:
+			return tac_create_cmd_print(children[0], children[1]);
 		/* Binary operations */
 		case AST_EXPR_SUM:
 			return tac_create_op(TAC_ADD, children[0], children[1]);
@@ -226,6 +234,16 @@ TAC* tac_create_for(TAC* var, TAC* start, TAC* end, TAC* command) {
 		label_end);
 }
 
+TAC* tac_create_cmd_read(TAC* var) {
+	return tac_create(TAC_READ, var->res, NULL, NULL);
+}
+TAC* tac_create_cmd_print(TAC* prev_arg, TAC* curr_arg) {
+	return tac_join(tac_join(
+		prev_arg,
+		curr_arg),
+		tac_create(TAC_PRINT, curr_arg->res, NULL, NULL));
+}
+
 
 TAC* tac_join(TAC *tac1, TAC *tac2) {
 	TAC *tac;
@@ -250,7 +268,8 @@ TAC* tac_reverse(TAC* tac) {
 }
 
 void _tac_print(TAC *tac) {
-	fprintf(stderr, "TAC (");
+	//if(tac->type == TAC_SYMBOL) return;
+	//fprintf(stderr, "TAC (");
 
 	switch (tac->type) {
 		case TAC_SYMBOL:		fprintf(stderr,"SYMBOL");		break;
@@ -280,17 +299,19 @@ void _tac_print(TAC *tac) {
 		case TAC_FUNC_BEGIN:	fprintf(stderr,"FUNC_BEGIN");	break;
 		case TAC_FUNC_END:		fprintf(stderr,"FUNC_END");		break;
 		case TAC_FUNC_RET:		fprintf(stderr,"RETURN");		break;
+		case TAC_READ:			fprintf(stderr,"READ");			break;
+		case TAC_PRINT:			fprintf(stderr,"PRINT");		break;
 		default:				fprintf(stderr,"UNKNOWN");		break;
 	}
 
 	if (tac->res)	fprintf(stderr, ", %s", tac->res->text);
-	else			fprintf(stderr, ", NULL");
+	//else			fprintf(stderr, ", NULL");
 	if (tac->op1)	fprintf(stderr, ", %s", tac->op1->text);
-	else			fprintf(stderr, ", NULL");
+	//else			fprintf(stderr, ", NULL");
 	if (tac->op2)	fprintf(stderr, ", %s", tac->op2->text);
-	else			fprintf(stderr, ", NULL");
+	//else			fprintf(stderr, ", NULL");
 
-	fprintf(stderr, ")\n");
+	fprintf(stderr, "\n");
 }
 
 void tac_print_back(TAC *last) {
