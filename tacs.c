@@ -161,7 +161,14 @@ TAC* tac_create_array_attribution(TAC* array, TAC* index, TAC* value) {
 }
 
 TAC* tac_create_array_access(TAC* array, TAC* index) {
-	return tac_create(TAC_ACCESS_OFFSET, hash_make_temp(), array->res, index->res);
+	return tac_join(tac_join(
+		array,
+		index),
+		tac_create(
+			TAC_ACCESS_OFFSET,
+			hash_make_temp(),
+			array->res,
+			index->res));
 }
 
 TAC* tac_create_function_call(ASTree* node){
@@ -301,7 +308,7 @@ void _tac_print(TAC *tac) {
 	//fprintf(stderr, "TAC (");
 
 	switch (tac->type) {
-		case TAC_SYMBOL:		fprintf(stderr,"SYMBOL");		break;
+		case TAC_SYMBOL:		return;fprintf(stderr,"SYMBOL");		break;
 		case TAC_LABEL:			fprintf(stderr,"LABEL");		break;
 		case TAC_MOV:			fprintf(stderr,"MOV");			break;
 		case TAC_MOV_OFFSET:	fprintf(stderr,"MOV_OFFSET");	break;
