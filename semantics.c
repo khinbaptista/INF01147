@@ -263,7 +263,17 @@ void semantics_check(ASTree* node) {
 			}
 			node->datatype = datatype_hash_to_ast(node->children[2]->datatype);
 			break;
-
+		case AST_ARRAY_DECL:
+			assert(node->children[0] && node->children[1] && node->children[2]);
+			// If initialized
+			if(node->children[3]) {
+				int list_length = ast_param_list_count(node->children[3]);
+				int array_length = atoi(node->children[2]->symbol->text);
+				if(list_length != array_length) {
+					semantic_error_var(node->children[0]->symbol->text, "being initialized with wrong number of parameters.", node);
+				}
+			}
+			break;
 		case AST_TYPE_BYTE:
 		case AST_TYPE_SHORT:
 		case AST_TYPE_LONG:
@@ -271,7 +281,6 @@ void semantics_check(ASTree* node) {
 		case AST_TYPE_DOUBLE:
 		case AST_PROGRAM:
 		case AST_VAR_DECL:
-		case AST_ARRAY_DECL:
 		case AST_ARRAY_INIT:
 		case AST_FUNC_DECL:
 		case AST_FUNC_PARAMS_LIST:
