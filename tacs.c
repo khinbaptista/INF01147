@@ -9,6 +9,8 @@ TAC* tac_create_array_access(TAC* array, TAC* index);
 TAC* tac_create_array_attr(TAC* array, TAC* index, TAC* value);
 TAC* tac_create_function_call(ASTree* node);
 TAC* tac_create_function_arg(ASTree* arg, HashNode* function, int arg_number);
+TAC* tac_create_function_declaration(HashNode* function, TAC* body);
+TAC* tac_create_function_return(TAC* value);
 TAC* tac_create_when(TAC* condition, TAC* cmd);
 TAC* tac_create_when_else(TAC* condition, TAC* when_cmd, TAC* else_cmd);
 TAC* tac_create_while(TAC* condition, TAC* cmd);
@@ -48,8 +50,10 @@ TAC* tac_generate(ASTree* node) {
 		/* Functions */
 		case AST_FUNC_CALL:
 			return tac_create_function_call(node);
-		//case AST_FUNC_DECL:
-
+		case AST_FUNC_DECL:
+			return tac_create_function_declaration(node->children[1]->symbol, children[3]);
+		case AST_CMD_RETURN:
+			return tac_create_function_return(children[0]);
 		/* Control flow */
 		case AST_CMD_WHEN:
 			return tac_create_when(children[0], children[1]);
@@ -149,6 +153,14 @@ TAC* tac_create_function_arg(ASTree* arg, HashNode* function, int arg_number) {
 	return tac_join(value_tac,arg_tac);
 }
 
+TAC* tac_create_function_declaration(HashNode* function, TAC* body) {
+	TAC* begin = tac_create(TAC_FUNC_BEGIN, function, NULL, NULL);
+	TAC* end = tac_create(TAC_FUNC_END, function, NULL, NULL);
+	return tac_join(tac_join(begin, body), end);
+}
+TAC* tac_create_function_return(TAC* value) {
+	return tac_join(value, tac_create(TAC_FUNC_RET, value->res, NULL, NULL));
+}
 TAC* tac_create_when(TAC* condition, TAC* cmd) {
 	HashNode* hash_label = hash_make_label();
 	TAC* jump = tac_create(TAC_IFZ, hash_label, condition->res, NULL);
@@ -265,6 +277,9 @@ void _tac_print(TAC *tac) {
 		case TAC_JMP:			fprintf(stderr,"JMP");			break;
 		case TAC_FUNC_ARG:		fprintf(stderr,"FUNC_ARG");		break;
 		case TAC_FUNC_CALL:		fprintf(stderr,"FUNC_CALL");	break;
+		case TAC_FUNC_BEGIN:	fprintf(stderr,"FUNC_BEGIN");	break;
+		case TAC_FUNC_END:		fprintf(stderr,"FUNC_END");		break;
+		case TAC_FUNC_RET:		fprintf(stderr,"RETURN");		break;
 		default:				fprintf(stderr,"UNKNOWN");		break;
 	}
 
