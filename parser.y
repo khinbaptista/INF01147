@@ -110,7 +110,7 @@ var_decl :	TK_IDENTIFIER ':' type literal	{ $$ = ast_var_decl($1, $3, $4); }
 | TK_IDENTIFIER ':' type'['LIT_INTEGER']' array_init 	{ $$ = ast_array_decl($1, $3, $5, $7); }
 ;
 
-array_init : literal array_init { $$ = ast_array_init($1, $2); }
+array_init : array_init literal { $$ = ast_array_init($1, $2); }
 |					   			{ $$ = NULL; }
 ;
 

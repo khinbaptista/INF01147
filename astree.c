@@ -145,8 +145,8 @@ ASTree* ast_array_decl(HashNode* name, ASTree*  type, HashNode* array_size, ASTr
 	return astree_create(AST_ARRAY_DECL, identifier, type, ast_literal(array_size), array_init, NULL);
 }
 
-ASTree* ast_array_init(ASTree* literal, ASTree* array_init) {
-	return astree_create(AST_ARRAY_INIT, literal, array_init, NULL, NULL, NULL);
+ASTree* ast_array_init(ASTree* list, ASTree* literal) {
+	return astree_create(AST_ARRAY_INIT, list, literal, NULL, NULL, NULL);
 }
 
 ASTree* ast_func_decl(ASTree* type, HashNode* name, ASTree* params_list, ASTree* command) {
