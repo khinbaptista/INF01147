@@ -7,6 +7,9 @@ v : long[5];
 long soma(long op1, long op2)
 	return op1 + op2;
 
+long test(long a1, long a2, long a3, long a4)
+	return a1 * a2 * a3 * a4;
+
 long f() return 1;
 byte main() {
 	print "string";
@@ -26,4 +29,6 @@ byte main() {
 	while (a >= 10)
 		a = a - 1;
 	return 0;
+	c = soma(1,2);
+	d = test(d,soma(1,2),d,10);
 };

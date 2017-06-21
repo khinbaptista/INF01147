@@ -7,6 +7,8 @@ void _tac_print(TAC*);
 TAC* tac_create_op(int type, TAC* op1, TAC* op2);
 TAC* tac_create_array_access(TAC* array, TAC* index);
 TAC* tac_create_array_attr(TAC* array, TAC* index, TAC* value);
+TAC* tac_create_function_call(ASTree* node);
+TAC* tac_create_function_arg(ASTree* arg, HashNode* function, int arg_number);
 TAC* tac_create_when(TAC* condition, TAC* cmd);
 TAC* tac_create_when_else(TAC* condition, TAC* when_cmd, TAC* else_cmd);
 TAC* tac_create_while(TAC* condition, TAC* cmd);
@@ -14,14 +16,17 @@ TAC* tac_create_for(TAC* var, TAC* start, TAC* end, TAC* command);
 TAC* tac_create_array_access(TAC* var, TAC* index);
 TAC* tac_create_array_attribution(TAC* var, TAC* index, TAC* value);
 
-TAC* tac_generate(ASTree *node) {
+TAC* tac_generate(ASTree* node) {
 	if (!node)  {
 		return NULL;
 	}
 
 	TAC *children[MAX_CHILDREN];
-	for (int i = 0; i < MAX_CHILDREN; i++) {
-		children[i] = tac_generate(node->children[i]);
+	if(node->type != AST_FUNC_CALL) {
+		// Recursion happens before current node except for cases above
+		for (int i = 0; i < MAX_CHILDREN; i++) {
+			children[i] = tac_generate(node->children[i]);
+		}
 	}
 
 	switch (node->type) {
@@ -30,7 +35,7 @@ TAC* tac_generate(ASTree *node) {
 		case AST_IDENTIFIER:
 			return tac_create(TAC_SYMBOL, node->symbol, NULL, NULL);
 		case AST_EXPR_SCALAR_ACCESS:
-			return tac_create(TAC_SYMBOL, node->symbol, NULL, NULL);
+			return tac_create(TAC_SYMBOL, node->children[0]->symbol, NULL, NULL);
 		case AST_EXPR_ARRAY_ACCESS:
 			return tac_create_array_access(children[0], children[1]);
 
@@ -39,6 +44,11 @@ TAC* tac_generate(ASTree *node) {
 			return tac_join(children[1], tac_create(TAC_MOV, children[0]->res, children[1]->res, NULL));
 		case AST_CMD_ARRAY_ATTR:
 			return tac_create_array_attribution(children[0], children[1], children[2]);
+
+		/* Functions */
+		case AST_FUNC_CALL:
+			return tac_create_function_call(node);
+		//case AST_FUNC_DECL:
 
 		/* Control flow */
 		case AST_CMD_WHEN:
@@ -89,7 +99,7 @@ TAC* tac_generate(ASTree *node) {
 }
 
 TAC* tac_create(int type, HashNode *res, HashNode *op1, HashNode *op2) {
-	TAC *tac	= calloc(1, sizeof(TAC));
+	TAC* tac	= calloc(1, sizeof(TAC));
 	tac->type	= type;
 	tac->res	= res;
 	tac->op1	= op1;
@@ -107,12 +117,36 @@ TAC* tac_create_op(int type, TAC* op1, TAC* op2) {
 TAC* tac_create_array_attribution(TAC* array, TAC* index, TAC* value) {
 	TAC* attribution = tac_create(TAC_MOV_OFFSET, array->res, index->res, value->res);
 	return tac_join(tac_join(index, value), attribution);
-
-
 }
 
 TAC* tac_create_array_access(TAC* array, TAC* index) {
 	return tac_create(TAC_ACCESS_OFFSET, hash_make_temp(), array->res, index->res);
+}
+
+TAC* tac_create_function_call(ASTree* node){
+	int num_args = ast_param_list_count(node->children[1]);
+	HashNode* function = node->children[0]->symbol;
+	ASTree* list = node->children[1];
+	TAC* arg_list = NULL;
+	for(int i = num_args - 1; i >= 0; --i) {
+		// Join new argument to list
+		// (inverted since arg list is inverted in AST)
+		arg_list = tac_join(
+			tac_create_function_arg(list->children[1], function, i),
+			arg_list);
+		// Point list to next element
+		list = list->children[0];
+	}
+	TAC* call = tac_create(TAC_FUNC_CALL, hash_make_temp(), function, NULL);
+	return tac_join(arg_list,call);
+}
+TAC* tac_create_function_arg(ASTree* arg, HashNode* function, int arg_number) {
+	TAC* value_tac = tac_generate(arg);
+	char* num_string = calloc(17, sizeof(char));
+	sprintf(num_string, "%d", arg_number);
+	HashNode* number = hash_insert(SYMBOL_LIT_INTEGER, num_string);
+	TAC* arg_tac = tac_create(TAC_FUNC_ARG,value_tac->res,function, number);
+	return tac_join(value_tac,arg_tac);
 }
 
 TAC* tac_create_when(TAC* condition, TAC* cmd) {
@@ -229,6 +263,8 @@ void _tac_print(TAC *tac) {
 		case TAC_NEGATIVE:		fprintf(stderr,"NEGATIVE"); 	break;
 		case TAC_IFZ:			fprintf(stderr,"IFZ");			break;
 		case TAC_JMP:			fprintf(stderr,"JMP");			break;
+		case TAC_FUNC_ARG:		fprintf(stderr,"FUNC_ARG");		break;
+		case TAC_FUNC_CALL:		fprintf(stderr,"FUNC_CALL");	break;
 		default:				fprintf(stderr,"UNKNOWN");		break;
 	}
 

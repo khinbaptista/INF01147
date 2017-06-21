@@ -7,13 +7,12 @@ enum tac_types {
 	TAC_UNKNOWN = 0,
 	TAC_LABEL,
 	TAC_SYMBOL,
-
-		/* TAC only ops */
 	TAC_INC,
 	TAC_MOV,
 	TAC_MOV_OFFSET,
 	TAC_ACCESS_OFFSET,
-
+	TAC_IFZ,
+	TAC_JMP,
 	/* Binary Ops */
 	TAC_ADD,
 	TAC_SUB,
@@ -27,19 +26,16 @@ enum tac_types {
 	TAC_NOT_EQUAL,
 	TAC_OR,
 	TAC_AND,
-
 	/* Unary Ops */
 	TAC_NOT,
 	TAC_NEGATIVE,
-
-	/* Commands */
-	TAC_IFZ,
-	TAC_JMP,
+	/* Functions */
 	TAC_FUNC_BEGIN,
 	TAC_FUNC_END,
-	TAC_CALL,
-	TAC_ARG,
-	TAC_RET,
+	TAC_FUNC_CALL,
+	TAC_FUNC_ARG,
+	TAC_FUNC_RET,
+	/* Commands */
 	TAC_PRINT,
 	TAC_READ,
 };
