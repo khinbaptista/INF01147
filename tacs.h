@@ -59,3 +59,4 @@ TAC* tac_reverse(TAC*);
 
 void tac_print_back(TAC* last);
 void tac_print_forward(TAC* first);
+void tac_print_assembly(TAC *first, FILE* output);

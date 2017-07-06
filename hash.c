@@ -79,6 +79,10 @@ HashNode* hash_insert(int type, char* text) {
 	}
 	node->text = calloc(strlen(text) + 1, sizeof(char));
 	strcpy(node->text, text);
+	/* 	If we want to avoid the temporary magic name the following could be used:
+			sprintf(node->text, "_%s", text);
+		but this breaks semantic checks the way we do them now.
+	*/
 
 	node->next = _table[address];
 	_table[address] = node;

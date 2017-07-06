@@ -28,6 +28,7 @@ TAC* tac_generate(ASTree* node) {
 		return NULL;
 	}
 
+
 	TAC *children[MAX_CHILDREN];
 	if(node->type != AST_FUNC_CALL || node->type != AST_ARRAY_DECL) {
 		// Recursion happens before current node except for cases above
@@ -383,4 +384,278 @@ void tac_print_forward(TAC *first) {
 	for (tac = first; tac; tac = tac->next) {
 		_tac_print(tac);
 	}
+}
+
+void _tac_print_instruction(TAC *tac, FILE* output) {
+	switch (tac->type) {
+		case TAC_LABEL:
+		/*
+			.label ## just print the label
+		*/
+			break;
+		case TAC_MOV:
+		/*
+			movl	value(%rip), %eax
+			movl	%eax, variable(%rip)
+		*/
+			break;
+		case TAC_MOV_OFFSET:
+		/*
+			movl	value(%rip), %eax
+			movl	%eax, variable+{4*offset}(%rip)
+		*/
+			break;
+		case TAC_ACCESS_OFFSET:
+		/*
+			movl	source+{4*offset}(%rip), %eax
+			movl	%eax, destination(%rip)
+		*/
+			break;
+		case TAC_INC:
+		/*
+			movl	var(%rip), %eax
+			addl	$1, %eax
+			movl	%eax, var(%rip)
+		*/
+			break;
+		case TAC_ADD:
+		/*
+			movl	op1(%rip), %edx
+			movl	op2(%rip), %eax
+			addl	%edx, %eax
+			movl	%eax, res(%rip)
+		*/
+			break;
+		case TAC_SUB:
+		/*
+			movl	op1(%rip), %edx
+			movl	op2(%rip), %eax
+			subl	%eax, %edx
+			movl	%edx, %eax
+			movl	%eax, res(%rip)
+		*/
+			break;
+		case TAC_MULT:
+		/*
+			movl	op1(%rip), %edx
+			movl	op2(%rip), %eax
+			imull	%edx, %eax
+			movl	%eax, res(%rip)
+		*/
+			break;
+		case TAC_DIV:
+		/*
+			movl	op1(%rip), %eax
+			movl	op2(%rip), %ecx
+			cltd
+			idivl	%ecx
+			movl	%eax, res(%rip)
+		*/
+			break;
+		case TAC_LESSER:
+		/*
+			movl	op1(%rip), %edx
+			movl	op2(%rip), %eax
+			cmpl	%eax, %edx
+			setl	%al
+			movzbl	%al, %eax
+			movl	%eax, res(%rip)
+		*/
+			break;
+		case TAC_GREATER:
+		/*
+			movl	op1(%rip), %edx
+			movl	op2(%rip), %eax
+			cmpl	%eax, %edx
+			setg	%al
+			movzbl	%al, %eax
+			movl	%eax, res(%rip)
+		*/
+			break;
+		case TAC_LESSER_EQ:
+		/*
+			movl	op1(%rip), %edx
+			movl	op2(%rip), %eax
+			cmpl	%eax, %edx
+			setle	%al
+			movzbl	%al, %eax
+			movl	%eax, res(%rip)
+		*/
+			break;
+		case TAC_GREATER_EQ:
+		/*
+			movl	op1(%rip), %edx
+			movl	op2(%rip), %eax
+			cmpl	%eax, %edx
+			setge	%al
+			movzbl	%al, %eax
+			movl	%eax, res(%rip)
+		*/
+			break;
+		case TAC_EQUAL:
+		/*
+			movl	op1(%rip), %edx
+			movl	op2(%rip), %eax
+			cmpl	%eax, %edx
+			sete	%al
+			movzbl	%al, %eax
+			movl	%eax, res(%rip)
+		*/
+			break;
+		case TAC_NOT_EQUAL:
+		/*
+			movl	op1(%rip), %edx
+			movl	op2(%rip), %eax
+			cmpl	%eax, %edx
+			setne	%al
+			movzbl	%al, %eax
+			movl	%eax, res(%rip)
+		*/
+			break;
+		case TAC_OR:
+		/*
+			movl	op1(%rip), %edx
+			movl	op2(%rip), %eax
+			orl	%edx, %eax			## bitwise
+			movl	%eax, res(%rip)
+		*/
+			break;
+		case TAC_AND:
+		/*
+			movl	op1(%rip), %edx
+			movl	op2(%rip), %eax
+			andl	%edx, %eax		## bitwise
+			movl	%eax, res(%rip)
+		*/
+			break;
+		case TAC_NOT:
+		/*
+			movl	op1(%rip), %eax
+			testl	%eax, %eax		## if %eax == 0, %al receives one, zero otherwise
+			sete	%al
+			movzbl	%al, %eax
+			movl	%eax, res(%rip)
+		*/
+			break;
+		case TAC_NEGATIVE:
+		/*
+			movl	op1(%rip), %eax
+			negl	%eax
+			movl	%eax, res(%rip)
+		*/
+			break;
+		case TAC_IFZ:
+		/*
+			movl	var(%rip), %eax
+			testl	%eax, %eax
+			je	.label
+		*/
+			break;
+		case TAC_JMP:
+		/*
+			jmp	.label
+		*/
+			break;
+		case TAC_FUNC_ARG:
+		/*
+			movl	value(%rip), %eax
+			movl	%eax, argument(%rip)
+		*/
+			break;
+		case TAC_FUNC_CALL:
+		/*
+			call	function
+			movl	%eax, res(%rip)	## result is in eax
+		*/
+			break;
+		case TAC_FUNC_BEGIN:
+		/*
+				.globl funcname
+			.funcname:
+				.cfi_startproc
+				pushq %rbp
+				movq %rsp, %rbp
+		*/
+			break;
+		case TAC_FUNC_END:
+		/*
+			popq %rbp
+			ret
+			.cfi_endproc
+		*/
+			break;
+		case TAC_FUNC_RET:
+		/*
+			## move return value to %eax
+			movl	returnValue(%rip), %eax
+			## should probably move TAC_FUNC_END here and stop generating dead code
+		*/
+			break;
+		case TAC_READ:
+		/*
+			movl	$variable, %esi
+			movl	$.LC0, %edi
+			call	__isoc99_scanf
+		*/
+			break;
+		case TAC_PRINT:
+		/*
+			movl	a(%rip), %eax
+			movl	%eax, %esi
+			movl	$.percentD, %edi	## .percentD is the %d string
+			movl	$0, %eax	(optional?)
+			call	printf
+		*/
+			break;
+		default:
+			return;
+	}
+
+	fprintf(output, "\n");
+}
+
+void tac_print_assembly(TAC *first, FILE* output) {
+	/*
+	##Var Declarations:
+			.globl	a
+			.align 4
+			.size	a, 4
+		a:
+			.long	6616
+	## Array - uninitialized
+		.comm	array, size
+	## Array - initialized
+			.globl	a
+			.data
+			.align 32
+			.size	a, size
+		a:
+			.long	value1
+			.long	value2
+			[... other values]
+	## Strings declaration
+		.section	.rodata
+	.percentd:
+		.string	"%d"	## there will be only one %d
+	.LC0:
+		.string	"string1"
+	.LC1:
+		.string	"%d"
+	## Main:
+			.text
+			.globl	main
+		main:
+			.cfi_startproc
+			pushq	%rbp
+	## Program here
+	*/
+	TAC *tac = NULL;
+	for (tac = first; tac; tac = tac->next) {
+		_tac_print_instruction(tac, output);
+	}
+	/* ## End of main:
+		popq	%rbp
+				ret
+				.cfi_endproc
+	*/
 }
