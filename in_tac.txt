@@ -25,7 +25,8 @@ byte main() {
 		c = 200;
 	};
 
-	while (a >= 10)
+	while (a >= 10+2)
 		a = a - 1;
+	a = 10*10+2;
 	return 0;
 };
