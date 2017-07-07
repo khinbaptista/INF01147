@@ -28,7 +28,6 @@ TAC* tac_generate(ASTree* node) {
 		return NULL;
 	}
 
-
 	TAC *children[MAX_CHILDREN];
 	if(node->type != AST_FUNC_CALL || node->type != AST_ARRAY_DECL) {
 		// Recursion happens before current node except for cases above

@@ -18,7 +18,7 @@ LDFLAGS	=
 ##################################################
 
 # Name of the project (executable binary)
-Project = etapa5
+Project = etapa6
 
 # Source files names
 SourceFiles = y.tab.c lex.yy.c semantics.c \

@@ -100,6 +100,13 @@ int ast_param_list_count(ASTree* list) {
 }
 
 ASTree* ast_literal(HashNode* symbol) {
+	char name[128];
+	sprintf(name, "__literal%s", symbol->text);
+/*
+	HashNode *id = hash_insert(SYMBOL_TK_IDENTIFIER, name);
+	ASTree *type = astree_create(
+		datatype_hash_to_ast(symbol->datatype), NULL, NULL, NULL, NULL, NULL);
+*/
 	return astree_create(AST_LITERAL, NULL, NULL, NULL, NULL, symbol);
 }
 
