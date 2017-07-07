@@ -61,19 +61,19 @@ HashNode* hash_insert(int type, char* text) {
 			node->datatype = HASH_TYPE_UNDEFINED;
 			break;
 		case SYMBOL_LIT_INTEGER:
-			node->id_type = ID_SCALAR;
+			node->id_type = ID_UNDEFINED;
 			node->datatype = HASH_TYPE_SHORT;
 			break;
 		case SYMBOL_LIT_REAL:
-			node->id_type = ID_SCALAR;
+			node->id_type = ID_UNDEFINED;
 			node->datatype = HASH_TYPE_FLOAT;
 			break;
 		case SYMBOL_LIT_CHAR:
-			node->id_type = ID_SCALAR;
+			node->id_type = ID_UNDEFINED;
 			node->datatype = HASH_TYPE_BYTE;
 			break;
 		case SYMBOL_LIT_STRING:
-			node->id_type = ID_SCALAR;
+			node->id_type = ID_UNDEFINED;
 			node->datatype = HASH_TYPE_STRING;
 			break;
 	}
@@ -107,7 +107,7 @@ HashNode* hash_make_temp(int datatype) {
 	_table[address] = temp;
 
 	temp->type = SYMBOL_TEMP;
-	temp->id_type = ID_UNDEFINED;
+	temp->id_type = ID_SCALAR;
 	temp->datatype = datatype;
 
 	return temp;

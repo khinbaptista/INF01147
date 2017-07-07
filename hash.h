@@ -45,6 +45,9 @@ typedef struct hash_node {
 	struct astree* function_params;
 	char *text;
 	struct hash_node* next;
+	struct hash_node* scalar_init;
+	struct astree* array_init;
+	int array_size;
 } HashNode;
 
 HashNode* _table[HASH_SIZE];

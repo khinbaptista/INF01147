@@ -46,7 +46,7 @@ int main(int argc, char* argv[]) {
 
 	TAC *tac = tac_generate(astree_root);
 	tac = tac_reverse(tac);
-	tac_print_forward(tac);
+	tac_print_assembly(tac,stderr);
 
 	if (argc >= 3) {
 		FILE *output = fopen(argv[2], "w");

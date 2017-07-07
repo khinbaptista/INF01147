@@ -1,4 +1,5 @@
 #include "tacs.h"
+#include "hash.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,7 +10,6 @@ TAC* tac_create_bool_op(int type, TAC* op1, TAC* op2);
 TAC* tac_create_not(TAC* op);
 TAC* tac_create_negative(TAC* op);
 TAC* tac_create_var_attribution(TAC* var, TAC* value);
-TAC* tac_create_array_decl(ASTree* node);
 TAC* tac_create_array_access(TAC* var, TAC* index);
 TAC* tac_create_array_attribution(TAC* var, TAC* index, TAC* value);
 TAC* tac_create_function_call(ASTree* node);
@@ -52,9 +52,13 @@ TAC* tac_generate(ASTree* node) {
 		case AST_CMD_ARRAY_ATTR:
 			return tac_create_array_attribution(children[0], children[1], children[2]);
 		case AST_VAR_DECL:
-			return tac_create_var_attribution(children[0], children[2]);
+			children[0]->res->scalar_init = children[2]->res;
+			//fprintf(stderr,"%s := %s\n", children[0]->res->text, children[2]->res->text);
+			return NULL;
 		case AST_ARRAY_DECL:
-			return tac_create_array_decl(node);
+			node->children[0]->symbol->array_init = node->children[3];
+			node->children[0]->symbol->array_size = atoi(node->children[2]->symbol->text);
+			return NULL;
 		/* Functions */
 		case AST_FUNC_CALL:
 			return tac_create_function_call(node);
@@ -151,29 +155,6 @@ TAC* tac_create_negative(TAC* op) {
 TAC* tac_create_var_attribution(TAC* var, TAC* value) {
 	return tac_join(tac_join(var,value),
 		tac_create(TAC_MOV, var->res, value->res, NULL));
-}
-
-TAC* tac_create_array_decl(ASTree* node) {
-	if(node->children[3]) {
-		int array_length = atoi(node->children[2]->symbol->text);
-		HashNode* array = node->children[0]->symbol;
-		ASTree* init_list = node->children[3];
-		TAC* tac_list = NULL;
-		char* position = calloc(17, sizeof(char));
-		for(int i = array_length - 1; i >= 0; --i) {
-			HashNode* value = init_list->children[1]->symbol;
-			sprintf(position, "%d", i);
-			HashNode* index = hash_insert(SYMBOL_LIT_INTEGER, position);
-			tac_list = tac_join(
-				tac_create(TAC_MOV_OFFSET, array, index, value),
-				tac_list
-			);
-			init_list = init_list->children[0];
-		}
-		return tac_list;
-	} else {
-		return NULL;
-	}
 }
 
 TAC* tac_create_array_attribution(TAC* array, TAC* index, TAC* value) {
@@ -613,25 +594,81 @@ void _tac_print_instruction(TAC *tac, FILE* output) {
 	fprintf(output, "\n");
 }
 
+HashNode* _table[HASH_SIZE];
+
+void tac_print_array_init(ASTree* list, FILE* output) {
+	if(list) {
+		tac_print_array_init(list->children[0], output);
+		fprintf(output, "\t.long	%s\n", list->children[1]->symbol->text);
+	}
+}
+
+void tac_print_hash_item(HashNode* item, FILE* output) {
+	if(item->id_type == ID_SCALAR) {
+		if(item->scalar_init){
+		/* ##Var Declarations:
+				.globl	{var}
+				.align 4
+				.size	{var}, 4
+			{var}:
+				.long	{value}
+		*/
+			fprintf(output, "\t.globl	%s\n", item->text);
+			fprintf(output, "\t.align 4\n");
+			fprintf(output, "\t.size	%s, 4\n", item->text);
+			fprintf(output, "%s:\n", item->text);
+			fprintf(output, "\t.long	%s\n", item->scalar_init->text);
+		} else {
+		/*	## Var uninitialized (temp, function params)
+			.comm	{var}, 4
+		*/
+			fprintf(output, "\t.comm	%s, 4\n", item->text);
+		}
+	} else if(item->id_type == ID_ARRAY) {
+		if(item->array_init) {
+		/* ## Array - initialized
+				.globl	{array}
+				.data
+				.align 32
+				.size	{array}, {size*4}
+			{array}:
+				.long	{value1}
+				.long	{value2}
+				[... other values]
+		*/
+			fprintf(output, "\t.globl	%s\n", item->text);
+			fprintf(output, "\t.data\n");
+			fprintf(output, "\t.align 32\n");
+			fprintf(output, "\t.size	%s, %d\n", item->text, item->array_size*4);
+			fprintf(output, "%s:\n", item->text);
+			tac_print_array_init(item->array_init,output);
+		} else {
+		/*
+			## Array - uninitialized
+			.comm	array, {size*4}
+		*/
+			fprintf(output, "\t.comm	%s, %d\n", item->text, item->array_size*4);
+		}
+	}
+}
+
+void tac_print_hash_table(FILE* output) {
+	int i;
+	for (i = 0; i < HASH_SIZE; i++) {
+		if (_table[i]) {
+			tac_print_hash_item(_table[i], output);
+			HashNode *it = _table[i]->next;
+			while(it) {
+				tac_print_hash_item(it, output);
+				it = it->next;
+			}
+		}
+	}
+}
+
 void tac_print_assembly(TAC *first, FILE* output) {
+	tac_print_hash_table(output);
 	/*
-	##Var Declarations:
-			.globl	a
-			.align 4
-			.size	a, 4
-		a:
-			.long	6616
-	## Array - uninitialized
-		.comm	array, size
-	## Array - initialized
-			.globl	a
-			.data
-			.align 32
-			.size	a, size
-		a:
-			.long	value1
-			.long	value2
-			[... other values]
 	## Strings declaration
 		.section	.rodata
 	.percentd:
@@ -648,10 +685,10 @@ void tac_print_assembly(TAC *first, FILE* output) {
 			pushq	%rbp
 	## Program here
 	*/
-	TAC *tac = NULL;
-	for (tac = first; tac; tac = tac->next) {
-		_tac_print_instruction(tac, output);
-	}
+	// TAC *tac = NULL;
+	// for (tac = first; tac; tac = tac->next) {
+	// 	_tac_print_instruction(tac, output);
+	// }
 	/* ## End of main:
 		popq	%rbp
 				ret

@@ -1,8 +1,10 @@
 a: byte 1;
 b: short 10;
+bbbb: short 10;
 c: float 1.5;
 d : byte 1.5;
 v : long[5] 1 2 3 4 5;
+v2 : long[5];
 
 long soma(long op1, long op2)
 	return op1 + op2;
@@ -30,3 +32,5 @@ byte main() {
 	a = 10*10+2;
 	return 0;
 };
+
+e : byte 1.99;
