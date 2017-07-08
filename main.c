@@ -11,6 +11,7 @@
 #include "lang171.h"
 #include "semantics.h"
 #include "tacs.h"
+#include "code_generation.h"
 
 extern FILE* yyin;
 void yyparse(void);
@@ -46,7 +47,7 @@ int main(int argc, char* argv[]) {
 
 	TAC *tac = tac_generate(astree_root);
 	tac = tac_reverse(tac);
-	tac_print_assembly(tac,stderr);
+	generate_program(tac,stderr);
 
 	if (argc >= 3) {
 		FILE *output = fopen(argv[2], "w");
