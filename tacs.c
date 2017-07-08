@@ -191,12 +191,13 @@ TAC* tac_create_function_call(ASTree* node){
 	TAC* call = tac_create(TAC_FUNC_CALL, hash_make_temp(function->datatype), function, NULL);
 	return tac_join(arg_list,call);
 }
+
 TAC* tac_create_function_arg(ASTree* arg, HashNode* function, int arg_number) {
 	TAC* value_tac = tac_generate(arg);
 	char* num_string = calloc(17, sizeof(char));
 	sprintf(num_string, "%d", arg_number);
 	HashNode* number = hash_insert(SYMBOL_LIT_INTEGER, num_string);
-	TAC* arg_tac = tac_create(TAC_FUNC_ARG,value_tac->res,function, number);
+	TAC* arg_tac = tac_create(TAC_FUNC_ARG, value_tac->res, function, number);
 	return tac_join(value_tac,arg_tac);
 }
 
@@ -205,9 +206,11 @@ TAC* tac_create_function_declaration(HashNode* function, TAC* body) {
 	TAC* end = tac_create(TAC_FUNC_END, function, NULL, NULL);
 	return tac_join(tac_join(begin, body), end);
 }
+
 TAC* tac_create_function_return(TAC* value) {
 	return tac_join(value, tac_create(TAC_FUNC_RET, value->res, NULL, NULL));
 }
+
 TAC* tac_create_when(TAC* condition, TAC* cmd) {
 	HashNode* hash_label = hash_make_label();
 	TAC* jump = tac_create(TAC_IFZ, hash_label, condition->res, NULL);
@@ -276,6 +279,7 @@ TAC* tac_create_for(TAC* var, TAC* start, TAC* end, TAC* command) {
 TAC* tac_create_cmd_read(TAC* var) {
 	return tac_create(TAC_READ, var->res, NULL, NULL);
 }
+
 TAC* tac_create_cmd_print(TAC* prev_arg, TAC* curr_arg) {
 	return tac_join(tac_join(
 		prev_arg,

@@ -1,4 +1,5 @@
 #include "code_generation.h"
+//fprintf(output, "\n", tac->);
 
 void generate_program(TAC *first, FILE* output) {
 	generate_variables_code(output);
@@ -33,29 +34,38 @@ void generate_program(TAC *first, FILE* output) {
 
 
 void generate_instruction(TAC *tac, FILE* output) {
+	if (tac == NULL || output == NULL) return;
+
 	switch (tac->type) {
 		case TAC_LABEL:
 		/*
 			.label ## just print the label
 		*/
+			fprintf(output, ".label\t%s", tac->res->text);
 			break;
 		case TAC_MOV:
 		/*
 			movl	value(%rip), %eax
 			movl	%eax, variable(%rip)
 		*/
+			fprintf(output, "movl\t%s(\%rip), \%eax\n", tac->op1->text);
+			fprintf(output, "movl\t\%eax, %s(\%rip)\n", tac->res->text);
 			break;
 		case TAC_MOV_OFFSET:
 		/*
 			movl	value(%rip), %eax
 			movl	%eax, variable+{4*offset}(%rip)
 		*/
+			fpritnf(output, "movl\t%s(\%rip), \%eax\n", tac->op2->text);
+			fpritnf(output, "movl\t\%eax, %s+{4*%s}(\%rip)\n", tac->res->text, tac->op1->text);
 			break;
 		case TAC_ACCESS_OFFSET:
 		/*
 			movl	source+{4*offset}(%rip), %eax
 			movl	%eax, destination(%rip)
 		*/
+			fprintf(output, "movl\t%s+{4*%s}(\%rip), \%eax\n", tac->op1->text, tac->op2->text);
+			fprintf(output, "movl\t\%eax, %s(\%rip)\n", tac->res->text);
 			break;
 		case TAC_INC:
 		/*
@@ -63,6 +73,9 @@ void generate_instruction(TAC *tac, FILE* output) {
 			addl	$1, %eax
 			movl	%eax, var(%rip)
 		*/
+			fprintf(output, "movl\t%s(\%rip), \%eax\n", tac->res->text);
+			fprintf(output, "addl\t$1, \%eax\n");
+			fprintf(output, "movl\t\%eax, %s(\%rip)\n", tac->res->text);
 			break;
 		case TAC_ADD:
 		/*
@@ -71,6 +84,10 @@ void generate_instruction(TAC *tac, FILE* output) {
 			addl	%edx, %eax
 			movl	%eax, res(%rip)
 		*/
+			fprintf(output, "movl\t%s(\%rip), \%edx\n", tac->op1->text);
+			fprintf(output, "movl\t%s(\%rip), \%eax\n", tac->op2->text);
+			fprintf(output, "addl\t\%edx, \%eax\n");
+			fprintf(output, "movl\t\%eax, %s(\%rip)\n", tac->res->text);
 			break;
 		case TAC_SUB:
 		/*
@@ -80,6 +97,10 @@ void generate_instruction(TAC *tac, FILE* output) {
 			movl	%edx, %eax
 			movl	%eax, res(%rip)
 		*/
+			fprintf(output, "movl\t%s(\%rip), \%edx\n", tac->op1->text);
+			fprintf(output, "movl\t%s(\%rip), \%eax\n", tac->op2->text);
+			fprintf(output, "subl\t\%edx, \%eax\n");
+			fprintf(output, "movl\t\%eax, %s(\%rip)\n", tac->res->text);
 			break;
 		case TAC_MULT:
 		/*
@@ -88,6 +109,10 @@ void generate_instruction(TAC *tac, FILE* output) {
 			imull	%edx, %eax
 			movl	%eax, res(%rip)
 		*/
+			fprintf(output, "movl\t%s(\%rip), \%edx\n", tac->op1->text);
+			fprintf(output, "movl\t%s(\%rip), \%eax\n", tac->op2->text);
+			fprintf(output, "imull\t\%edx, \%eax\n");
+			fprintf(output, "movl\t\%eax, %s(\%rip)\n", tac->res->text);
 			break;
 		case TAC_DIV:
 		/*
@@ -97,6 +122,11 @@ void generate_instruction(TAC *tac, FILE* output) {
 			idivl	%ecx
 			movl	%eax, res(%rip)
 		*/
+			fprintf(output, "movl\t%s(\%rip), \%edx\n", tac->op1->text);
+			fprintf(output, "movl\t%s(\%rip), \%ecx\n", tac->op2->text);
+			fprintf(output, "cltd\n");
+			fprintf(output, "idivl\t\%ecx\n");
+			fprintf(output, "movl\t\%eax, %s(\%rip)\n", tac->res->text);
 			break;
 		case TAC_LESSER:
 		/*
@@ -107,6 +137,12 @@ void generate_instruction(TAC *tac, FILE* output) {
 			movzbl	%al, %eax
 			movl	%eax, res(%rip)
 		*/
+			fprintf(output, "movl\t%s(\%rip), \%edx\n", tac->op1->text);
+			fprintf(output, "movl\t%s(\%rip), \%eax\n", tac->op2->text);
+			fprintf(output, "cmpl\t\%eax, \%edx\n");
+			fprintf(output, "setl\t\%al\n");
+			fprintf(output, "movzbl\t\%al, \%eax\n");
+			fprintf(output, "movl\t\%eax, %s(\%rip)\n", tac->res->text);
 			break;
 		case TAC_GREATER:
 		/*
@@ -117,6 +153,12 @@ void generate_instruction(TAC *tac, FILE* output) {
 			movzbl	%al, %eax
 			movl	%eax, res(%rip)
 		*/
+			fprintf(output, "movl\t%s(\%rip), \%edx\n", tac->op1->text);
+			fprintf(output, "movl\t%s(\%rip), \%eax\n", tac->op2->text);
+			fprintf(output, "cmpl\t\%eax, \%edx\n");
+			fprintf(output, "setg\t\%al\n");
+			fprintf(output, "movzbl\t\%al, \%eax\n");
+			fprintf(output, "movl\t\%eax, %s(\%rip)\n", tac->res->text);
 			break;
 		case TAC_LESSER_EQ:
 		/*
@@ -127,6 +169,12 @@ void generate_instruction(TAC *tac, FILE* output) {
 			movzbl	%al, %eax
 			movl	%eax, res(%rip)
 		*/
+			fprintf(output, "movl\t%s(\%rip), \%edx\n", tac->op1->text);
+			fprintf(output, "movl\t%s(\%rip), \%eax\n", tac->op2->text);
+			fprintf(output, "cmpl\t\%eax, \%edx\n");
+			fprintf(output, "setle\t\%al\n");
+			fprintf(output, "movzbl\t\%al, \%eax\n");
+			fprintf(output, "movl\t\%eax, %s(\%rip)\n", tac->res->text);
 			break;
 		case TAC_GREATER_EQ:
 		/*
@@ -137,6 +185,12 @@ void generate_instruction(TAC *tac, FILE* output) {
 			movzbl	%al, %eax
 			movl	%eax, res(%rip)
 		*/
+			fprintf(output, "movl\t%s(\%rip), \%edx\n", tac->op1->text);
+			fprintf(output, "movl\t%s(\%rip), \%eax\n", tac->op2->text);
+			fprintf(output, "cmpl\t\%eax, \%edx\n");
+			fprintf(output, "setge\t\%al\n");
+			fprintf(output, "movzbl\t\%al, \%eax\n");
+			fprintf(output, "movl\t\%eax, %s(\%rip)\n", tac->res->text);
 			break;
 		case TAC_EQUAL:
 		/*
@@ -147,6 +201,12 @@ void generate_instruction(TAC *tac, FILE* output) {
 			movzbl	%al, %eax
 			movl	%eax, res(%rip)
 		*/
+			fprintf(output, "movl\t%s(\%rip), \%edx\n", tac->op1->text);
+			fprintf(output, "movl\t%s(\%rip), \%eax\n", tac->op2->text);
+			fprintf(output, "cmpl\t\%eax, \%edx\n");
+			fprintf(output, "sete\t\%al\n");
+			fprintf(output, "movzbl\t\%al, \%eax\n");
+			fprintf(output, "movl\t\%eax, %s(\%rip)\n", tac->res->text);
 			break;
 		case TAC_NOT_EQUAL:
 		/*
@@ -157,12 +217,18 @@ void generate_instruction(TAC *tac, FILE* output) {
 			movzbl	%al, %eax
 			movl	%eax, res(%rip)
 		*/
+			fprintf(output, "movl\t%s(\%rip), \%edx\n", tac->op1->text);
+			fprintf(output, "movl\t%s(\%rip), \%eax\n", tac->op2->text);
+			fprintf(output, "cmpl\t\%eax, \%edx\n");
+			fprintf(output, "setne\t\%al\n");
+			fprintf(output, "movzbl\t\%al, \%eax\n");
+			fprintf(output, "movl\t\%eax, %s(\%rip)\n", tac->res->text);
 			break;
 		case TAC_OR:
 		/*
 			movl	op1(%rip), %edx
 			movl	op2(%rip), %eax
-			orl	%edx, %eax			## bitwise
+			orl	%edx, %eax			## bitwise (??)
 			movl	%eax, res(%rip)
 		*/
 			break;
@@ -170,7 +236,7 @@ void generate_instruction(TAC *tac, FILE* output) {
 		/*
 			movl	op1(%rip), %edx
 			movl	op2(%rip), %eax
-			andl	%edx, %eax		## bitwise
+			andl	%edx, %eax		## bitwise (??)
 			movl	%eax, res(%rip)
 		*/
 			break;
@@ -182,6 +248,11 @@ void generate_instruction(TAC *tac, FILE* output) {
 			movzbl	%al, %eax
 			movl	%eax, res(%rip)
 		*/
+			fprintf(output, "movl\t%s(\%rip), \%eax\n", tac->op1->text);
+			fprintf(output, "testl\t\%eax, \%eax\n");
+			fprintf(output, "sete\t\%al\n");
+			fprintf(output, "movzbl\t\%al, \%eax\n");
+			fprintf(output, "movl\t\%eax, %s(\%rip)\n", tac->res->text);
 			break;
 		case TAC_NEGATIVE:
 		/*
@@ -189,6 +260,9 @@ void generate_instruction(TAC *tac, FILE* output) {
 			negl	%eax
 			movl	%eax, res(%rip)
 		*/
+			fprintf(output, "movl\t%s(\%rip), \%eax\n", tac->op1->text);
+			fprintf(output, "negl\t\%eax\n");
+			fprintf(output, "movl\t\%eax, %s(\%rip)\n", tac->res->text);
 			break;
 		case TAC_IFZ:
 		/*
@@ -196,17 +270,23 @@ void generate_instruction(TAC *tac, FILE* output) {
 			testl	%eax, %eax
 			je	.label
 		*/
+			fprintf(output, "movl\t%s(\%rip), \%eax\n", tac->op1->text);
+			fprintf(output, "testl\t\%eax, \%eax\n");
+			fprintf(output, "je\t%s\n", tac->res->text);
 			break;
 		case TAC_JMP:
 		/*
 			jmp	.label
 		*/
+			fprintf(output, "jmp\t%s\n", tac->res->text);
 			break;
 		case TAC_FUNC_ARG:
 		/*
 			movl	value(%rip), %eax
 			movl	%eax, argument(%rip)
 		*/
+			fprintf(output, "movl\t%s(\%rip), \%eax\n", tac->op1->text);
+			fprintf(output, "movl\t\%eax, %s(\%rip)\n", tac->res->text);
 			break;
 		case TAC_FUNC_CALL:
 		/*
@@ -331,4 +411,3 @@ void generate_array_init_code(ASTree* list, FILE* output) {
 		fprintf(output, "\t.long	%s\n", list->children[1]->symbol->text);
 	}
 }
-
