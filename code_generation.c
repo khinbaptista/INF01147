@@ -283,16 +283,16 @@ void generate_var_code(HashNode* item, FILE* output) {
 			{var}:
 				.long	{value}
 		*/
-			fprintf(output, "\t.globl	%s\n", item->text);
+			fprintf(output, "\t.globl	_%s\n", item->text);
 			fprintf(output, "\t.align 4\n");
-			fprintf(output, "\t.size	%s, 4\n", item->text);
-			fprintf(output, "%s:\n", item->text);
+			fprintf(output, "\t.size	_%s, 4\n", item->text);
+			fprintf(output, "_%s:\n", item->text);
 			fprintf(output, "\t.long	%s\n", item->scalar_init->text);
 		} else {
 		/*	## Var uninitialized (temp, function params)
 			.comm	{var}, 4
 		*/
-			fprintf(output, "\t.comm	%s, 4\n", item->text);
+			fprintf(output, "\t.comm	_%s, 4\n", item->text);
 		}
 	} else if(item->id_type == ID_ARRAY) {
 		if(item->array_init) {
@@ -306,18 +306,18 @@ void generate_var_code(HashNode* item, FILE* output) {
 				.long	{value2}
 				[... other values]
 		*/
-			fprintf(output, "\t.globl	%s\n", item->text);
+			fprintf(output, "\t.globl	_%s\n", item->text);
 			fprintf(output, "\t.data\n");
 			fprintf(output, "\t.align 32\n");
-			fprintf(output, "\t.size	%s, %d\n", item->text, item->array_size*4);
-			fprintf(output, "%s:\n", item->text);
+			fprintf(output, "\t.size	_%s, %d\n", item->text, item->array_size*4);
+			fprintf(output, "_%s:\n", item->text);
 			generate_array_init_code(item->array_init,output);
 		} else {
 		/*
 			## Array - uninitialized
 			.comm	array, {size*4}
 		*/
-			fprintf(output, "\t.comm	%s, %d\n", item->text, item->array_size*4);
+			fprintf(output, "\t.comm	_%s, %d\n", item->text, item->array_size*4);
 		}
 	}
     /*
