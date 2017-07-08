@@ -1,16 +1,18 @@
 #include "code_generation.h"
 
 void generate_program(TAC *first, FILE* output) {
-	generate_hash_table_code(output);
+	generate_variables_code(output);
 	/*
-	## Strings declaration
+    ## Strings declaration
 		.section	.rodata
 	.percentd:
 		.string	"%d"	## there will be only one %d
-	.LC0:
-		.string	"string1"
-	.LC1:
-		.string	"%d"
+
+    ## TODO: make a second pass through hash_table getting only strings
+    ## (or find alternative)
+	.{name??}:
+		.string	"stringvalue"
+
 	## Main:
 			.text
 			.globl	main
@@ -19,10 +21,9 @@ void generate_program(TAC *first, FILE* output) {
 			pushq	%rbp
 	## Program here
 	*/
-	// TAC *tac = NULL;
-	// for (tac = first; tac; tac = tac->next) {
-	// 	_tac_print_instruction(tac, output);
-	// }
+	for (TAC* tac = first; tac; tac = tac->next) {
+		generate_instruction(tac, output);
+	}
 	/* ## End of main:
 		popq	%rbp
 				ret
@@ -255,26 +256,24 @@ void generate_instruction(TAC *tac, FILE* output) {
 		default:
 			return;
 	}
-
-	fprintf(output, "\n");
 }
 
 
-void generate_hash_table_code(FILE* output) {
+void generate_variables_code(FILE* output) {
 	int i;
 	for (i = 0; i < HASH_SIZE; i++) {
 		if (_table[i]) {
-			generate_hash_item_code(_table[i], output);
+			generate_var_code(_table[i], output);
 			HashNode *it = _table[i]->next;
 			while(it) {
-				generate_hash_item_code(it, output);
+				generate_var_code(it, output);
 				it = it->next;
 			}
 		}
 	}
 }
 
-void generate_hash_item_code(HashNode* item, FILE* output) {
+void generate_var_code(HashNode* item, FILE* output) {
 	if(item->id_type == ID_SCALAR) {
 		if(item->scalar_init){
 		/* ##Var Declarations:
@@ -312,7 +311,7 @@ void generate_hash_item_code(HashNode* item, FILE* output) {
 			fprintf(output, "\t.align 32\n");
 			fprintf(output, "\t.size	%s, %d\n", item->text, item->array_size*4);
 			fprintf(output, "%s:\n", item->text);
-			generate_hash_array_init_code(item->array_init,output);
+			generate_array_init_code(item->array_init,output);
 		} else {
 		/*
 			## Array - uninitialized
@@ -321,11 +320,14 @@ void generate_hash_item_code(HashNode* item, FILE* output) {
 			fprintf(output, "\t.comm	%s, %d\n", item->text, item->array_size*4);
 		}
 	}
+    /*
+        TODO: generate initialized variables for all LIT_REAL LIT_INTEGER LIT_CHAR
+    */
 }
 
-void generate_hash_array_init_code(ASTree* list, FILE* output) {
+void generate_array_init_code(ASTree* list, FILE* output) {
 	if(list) {
-		generate_hash_array_init_code(list->children[0], output);
+		generate_array_init_code(list->children[0], output);
 		fprintf(output, "\t.long	%s\n", list->children[1]->symbol->text);
 	}
 }
