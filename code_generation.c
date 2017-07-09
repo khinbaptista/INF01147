@@ -34,10 +34,10 @@ void generate_program(TAC *first, FILE* output) {
 	## Program here
 	*/
 	fprintf(output, ".text\n");
-	fprintf(output, ".globl\tmain\n");
-	fprintf(output, "main:\n");
-	fprintf(output, ".cfi_startproc\n");
-	fprintf(output, "pushq\t%%rbp\n\n");		// are we sure this should be here? isn't main a function like any other else?
+	// fprintf(output, ".globl\tmain\n");
+	// fprintf(output, "main:\n");
+	// fprintf(output, ".cfi_startproc\n");
+	// fprintf(output, "pushq\t%%rbp\n\n");		// are we sure this should be here? isn't main a function like any other else? It is :|
 
 	for (TAC* tac = first; tac; tac = tac->next) {
 		generate_instruction(tac, output);
@@ -48,9 +48,9 @@ void generate_program(TAC *first, FILE* output) {
 				ret
 				.cfi_endproc
 	*/
-	fprintf(output, "\npopq\t%%rbp\n");
-	fprintf(output, "ret\n");
-	fprintf(output, ".cfi_endproc\n");
+	// fprintf(output, "\npopq\t%%rbp\n");
+	// fprintf(output, "ret\n");
+	// fprintf(output, ".cfi_endproc\n");
 }
 
 
