@@ -47,7 +47,6 @@ int main(int argc, char* argv[]) {
 
 	TAC *tac = tac_generate(astree_root);
 	tac = tac_reverse(tac);
-	generate_program(tac,stderr);
 
 	if (argc >= 3) {
 		FILE *output = fopen(argv[2], "w");
@@ -57,9 +56,13 @@ int main(int argc, char* argv[]) {
 		}
 
 		//astree_write_code(output, astree_root);
+		generate_program(tac, output);
 		fclose(output);
 
 		fprintf(stderr, "Output written to '%s'\n", argv[2]);
+	}
+	else {
+		generate_program(tac, stderr);
 	}
 
 	exit(0);

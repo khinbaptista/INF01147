@@ -198,7 +198,7 @@ TAC* tac_create_function_arg(ASTree* arg, HashNode* function, int arg_number) {
 	sprintf(num_string, "%d", arg_number);
 	HashNode* number = hash_insert(SYMBOL_LIT_INTEGER, num_string);
 	TAC* arg_tac = tac_create(TAC_FUNC_ARG, value_tac->res, function, number);
-	return tac_join(value_tac,arg_tac);
+	return tac_join(value_tac, arg_tac);
 }
 
 TAC* tac_create_function_declaration(HashNode* function, TAC* body) {
