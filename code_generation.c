@@ -48,7 +48,7 @@ void generate_program(TAC *first, FILE* output) {
 				ret
 				.cfi_endproc
 	*/
-	fprintf(output, "\npopq\t%%rbp");
+	fprintf(output, "\npopq\t%%rbp\n");
 	fprintf(output, "ret\n");
 	fprintf(output, ".cfi_endproc\n");
 }
