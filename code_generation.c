@@ -60,7 +60,7 @@ void generate_instruction(TAC *tac, FILE* output) {
 		/*
 			.label ## just print the label
 		*/
-			fprintf(output, ".label\t%s\n", tac->res->text);
+			fprintf(output, ".%s\n", tac->res->text);
 			break;
 		case TAC_MOV:
 		/*
@@ -312,8 +312,8 @@ void generate_instruction(TAC *tac, FILE* output) {
 			movl	value(%rip), %eax
 			movl	%eax, argument(%rip)
 		*/
-			//fprintf(output, "movl\t%s(\%rip), \%eax\n", tac->op1->text);
-			//fprintf(output, "movl\t\%eax, %s(\%rip)\n", tac->res->text);
+			fprintf(output, "movl\t%s(%%rip), %%eax\n", tac->op1->text);
+			fprintf(output, "movl\t%%eax, %s(%%rip)\n", tac->res->text);
 			break;
 		case TAC_FUNC_CALL:
 		/*
