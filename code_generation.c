@@ -1,56 +1,27 @@
 #include "code_generation.h"
-//fprintf(output, "\n", tac->);
+#include <stdlib.h>
 
 void generate_program(TAC *first, FILE* output) {
 	if (first == NULL || output == NULL) { return; }
 
 	fprintf(output, "\n# ==== ASM generated ==== #\n");
 
+	/* Generate variables section */
 	generate_variables_code(output);
-
-	/*
-    ## Strings declaration
-		.section	.rodata
-	.percentD:
-		.string	"%d"	## there will be only one %d
-
-    ## TODO: make a second pass through hash_table getting only strings
-    ## (or find alternative)
-	.{name??}:
-		.string	"stringvalue"
-	*/
+	/* Generate strings section */
 	fprintf(output, "\n.section\t.rodata\n");
 	fprintf(output, ".percentD:\n");
-	fprintf(output, "\t.string \"%%d\"\n");
+	fprintf(output, "\t.string \"%%d\\n\"\n");
+	fprintf(output, ".percentS:\n");
+	fprintf(output, "\t.string \"%%s\"\n");
 	generate_string_declarations(output);
-
-	/*
-	## Main:
-			.text
-			.globl	main
-		main:
-			.cfi_startproc
-			pushq	%rbp
-	## Program here
-	*/
 	fprintf(output, ".text\n");
-	// fprintf(output, ".globl\tmain\n");
-	// fprintf(output, "main:\n");
-	// fprintf(output, ".cfi_startproc\n");
-	// fprintf(output, "pushq\t%%rbp\n\n");		// are we sure this should be here? isn't main a function like any other else? It is :|
-
+	/* Generate rest of program */
 	for (TAC* tac = first; tac; tac = tac->next) {
 		generate_instruction(tac, output);
 	}
-
-	/* ## End of main:
-		popq	%rbp
-				ret
-				.cfi_endproc
-	*/
-	// fprintf(output, "\npopq\t%%rbp\n");
-	// fprintf(output, "ret\n");
-	// fprintf(output, ".cfi_endproc\n");
+	// Add newline at end
+	fprintf(output, "\n");
 }
 
 
@@ -362,7 +333,7 @@ void generate_instruction(TAC *tac, FILE* output) {
 			call	__isoc99_scanf
 		*/
 			fprintf(output, "movl\t$_%s, %%esi\n", tac->res->text);
-			fprintf(output, "movl\t$.LC0, %%edi\n");
+			fprintf(output, "movl\t$.percentD, %%edi\n");
 			fprintf(output, "call\t__isoc99_scanf\n");
 			break;
 		case TAC_PRINT:
@@ -373,12 +344,19 @@ void generate_instruction(TAC *tac, FILE* output) {
 			movl	$0, %eax	(optional?)
 			call	printf
 		*/
+		if(tac->res->type == SYMBOL_LIT_STRING) {
 			fprintf(output, "movl\t$.%s, %%eax\n", tac->res->string_name);
 			fprintf(output, "movl\t%%eax, %%esi\n");
-			//fprintf(output, "movl\t$.percentD, %%edi\n");
 			fprintf(output, "movl\t$.%s, %%edi\n", tac->res->string_name);
 			fprintf(output, "movl\t$0, %%eax\n");
 			fprintf(output, "call\tprintf\n");
+		} else {
+			fprintf(output, "movl\t_%s(%%rip), %%eax\n", tac->res->text);
+			fprintf(output, "movl\t%%eax, %%esi\n");
+			fprintf(output, "movl\t$.percentD, %%edi\n");
+			fprintf(output, "movl\t$0, %%eax\n");
+			fprintf(output, "call\tprintf\n");
+		}
 			break;
 		default:
 			return;
@@ -445,10 +423,33 @@ void generate_var_code(HashNode* item, FILE* output) {
 		*/
 			fprintf(output, "\t.comm	_%s, %d\n", item->text, item->array_size*4);
 		}
+	} else if(item->type == SYMBOL_LIT_INTEGER) {
+		// Use number for variable name
+		fprintf(output, "\t.globl	_%s\n", item->text);
+		fprintf(output, "\t.align 4\n");
+		fprintf(output, "\t.size	_%s, 4\n", item->text);
+		fprintf(output, "_%s:\n", item->text);
+		fprintf(output, "\t.long	%s\n", item->text);
+
+	}  else if(item->type == SYMBOL_LIT_REAL) {
+		// Use number for variable name and convert value to int
+		fprintf(output, "\t.globl	_%s\n", item->text);
+		fprintf(output, "\t.align 4\n");
+		fprintf(output, "\t.size	_%s, 4\n", item->text);
+		fprintf(output, "_%s:\n", item->text);
+		fprintf(output, "\t.long	%d\n", atoi(item->text));
+
+	} else if(item->type == SYMBOL_LIT_CHAR) {
+		char* new_name = calloc(7,sizeof(char));	//char_X\0
+		char value = item->text[1];
+		sprintf(new_name,"char_%c", value);
+		fprintf(output, "\t.globl	_%s\n", new_name);
+		fprintf(output, "\t.align 4\n");
+		fprintf(output, "\t.size	_%s, 4\n", new_name);
+		fprintf(output, "_%s:\n", new_name);
+		fprintf(output, "\t.long	%d\n", value);
+		item->text = new_name;
 	}
-    /*
-        TODO: generate initialized variables for all LIT_REAL LIT_INTEGER LIT_CHAR
-    */
 }
 
 void generate_array_init_code(ASTree* list, FILE* output) {

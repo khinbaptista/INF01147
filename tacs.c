@@ -184,7 +184,7 @@ TAC* tac_create_function_call(ASTree* node){
 		// Join new argument to list
 		// (inverted since arg list is inverted in AST)
 		arg_list = tac_join(
-			tac_create_function_arg(list->children[1], function, i, params_list->children[1]->children[1]),
+			tac_create_function_arg(list->children[1], function, i, params_list->children[1]->children[1]->symbol),
 			arg_list);
 		// Point list to next element
 		list = list->children[0];

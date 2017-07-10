@@ -35,12 +35,8 @@ int main(int argc, char* argv[]) {
 	yyparse();
 	fclose(input);
 	semantics_check(astree_root);
-	printf("\nFinished semantic check.\n");
 
-	if(!semantic_errors_found()) {
-		printf("\n==== Parsing and semantic checks sucessful. ====\n\n");
-	}
-	else {
+	if(semantic_errors_found()) {
 		printf("\n==== Semantic errors. Exiting... ====\n\n");
 		exit(4);
 	}
