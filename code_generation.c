@@ -364,6 +364,7 @@ void generate_instruction(TAC *tac, FILE* output) {
 }
 
 void generate_variables_code(FILE* output) {
+	fprintf(output, ".data\n");
 	int i;
 	for (i = 0; i < HASH_SIZE; i++) {
 		if (_table[i]) {
