@@ -254,7 +254,6 @@ ASTree* ast_expr_array_access(ASTree* name, ASTree* index) {
 	return astree_create(AST_EXPR_ARRAY_ACCESS, name, index, NULL, NULL, NULL);
 }
 
-
 // Assumes 'file' is a valid handle to an open file
 void astree_write_code(FILE* file, ASTree* node) {
 	switch (node->type) {

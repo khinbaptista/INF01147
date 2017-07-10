@@ -4,7 +4,7 @@
 void generate_program(TAC *first, FILE* output) {
 	if (first == NULL || output == NULL) { return; }
 
-	fprintf(output, "\n\n# ==== ASM generated ==== #\n\n");
+	fprintf(output, "\n# ==== ASM generated ==== #\n");
 
 	generate_variables_code(output);
 
@@ -332,7 +332,7 @@ void generate_instruction(TAC *tac, FILE* output) {
 				movq %rsp, %rbp
 		*/
 			fprintf(output, "\n.globl\t%s\n", tac->res->text);
-			fprintf(output, ".%s:\n", tac->res->text);
+			fprintf(output, "%s:\n", tac->res->text);
 			fprintf(output, ".cfi_startproc\n");
 			fprintf(output, "pushq\t%%rbp\n");
 			fprintf(output, "movq\t%%rsp, %%rbp\n");
@@ -343,7 +343,7 @@ void generate_instruction(TAC *tac, FILE* output) {
 			ret
 			.cfi_endproc
 		*/
-			fprintf(output, "popq %%rbp\n");
+			fprintf(output, "popq\t%%rbp\n");
 			fprintf(output, "ret\n");
 			fprintf(output, ".cfi_endproc\n");
 			break;
@@ -373,9 +373,10 @@ void generate_instruction(TAC *tac, FILE* output) {
 			movl	$0, %eax	(optional?)
 			call	printf
 		*/
-			fprintf(output, "movl\t_%s(%%rip), %%eax\n", tac->res->text);
+			fprintf(output, "movl\t$.%s, %%eax\n", tac->res->string_name);
 			fprintf(output, "movl\t%%eax, %%esi\n");
-			fprintf(output, "movl\t$.percentD, %%edi\n");
+			//fprintf(output, "movl\t$.percentD, %%edi\n");
+			fprintf(output, "movl\t$.%s, %%edi\n", tac->res->string_name);
 			fprintf(output, "movl\t$0, %%eax\n");
 			fprintf(output, "call\tprintf\n");
 			break;
@@ -460,7 +461,7 @@ void generate_array_init_code(ASTree* list, FILE* output) {
 void generate_string_declarations(FILE *output) {
 	for (int i = 0; i < HASH_SIZE; i++) {
 		if (_table[i] != NULL && _table[i]->datatype == HASH_TYPE_STRING) {
-			fprintf(output, ".percentD:\n");	// what is the string "name"? shouldn't it be described as a variable?
+			fprintf(output, ".%s:\n", _table[i]->string_name);
 			fprintf(output, "\t.string %s\n", _table[i]->text);
 		}
 	}

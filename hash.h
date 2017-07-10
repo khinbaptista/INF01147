@@ -42,12 +42,15 @@ typedef struct hash_node {
 	int type;
 	int id_type;
 	int datatype;
-	struct astree* function_params;
 	char *text;
+
 	struct hash_node* next;
 	struct hash_node* scalar_init;
+
+	struct astree* function_params;
 	struct astree* array_init;
 	int array_size;
+	char *string_name;
 } HashNode;
 
 HashNode* _table[HASH_SIZE];

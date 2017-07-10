@@ -45,6 +45,9 @@ HashNode* hash_find(char* text) {
 }
 
 HashNode* hash_insert(int type, char* text) {
+	static int string_count = 0;
+	static char buffer[128];
+
 	HashNode *node;
 	node = hash_find(text);
 
@@ -73,6 +76,10 @@ HashNode* hash_insert(int type, char* text) {
 			node->datatype = HASH_TYPE_BYTE;
 			break;
 		case SYMBOL_LIT_STRING:
+			sprintf(buffer, "_string%d", string_count++);
+			node->string_name = calloc(strlen(buffer) + 1, sizeof(char));
+			strcpy(node->string_name, buffer);
+
 			node->id_type = ID_UNDEFINED;
 			node->datatype = HASH_TYPE_STRING;
 			break;
