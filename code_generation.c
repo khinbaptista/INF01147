@@ -31,7 +31,7 @@ void generate_instruction(TAC *tac, FILE* output) {
 		/*
 			.label ## just print the label
 		*/
-			fprintf(output, ".%s\n", tac->res->text);
+			fprintf(output, ".%s:\n", tac->res->text);
 			break;
 		case TAC_MOV:
 		/*
@@ -89,8 +89,8 @@ void generate_instruction(TAC *tac, FILE* output) {
 		*/
 			fprintf(output, "movl\t_%s(%%rip), %%edx\n", tac->op1->text);
 			fprintf(output, "movl\t_%s(%%rip), %%eax\n", tac->op2->text);
-			fprintf(output, "subl\t%%edx, %%eax\n");
-			fprintf(output, "movl\t%%eax, _%s(%%rip)\n", tac->res->text);
+			fprintf(output, "subl\t%%eax, %%edx\n");
+			fprintf(output, "movl\t%%edx, _%s(%%rip)\n", tac->res->text);
 			break;
 		case TAC_MULT:
 		/*
