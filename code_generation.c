@@ -325,6 +325,8 @@ void generate_instruction(TAC *tac, FILE* output) {
 			## should probably move TAC_FUNC_END here and stop generating dead code
 		*/
 			fprintf(output, "movl\t_%s(%%rip), %%eax\n", tac->res->text);
+			fprintf(output, "popq\t%%rbp\n");
+			fprintf(output, "ret\n");
 			break;
 		case TAC_READ:
 		/*
