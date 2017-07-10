@@ -1,0 +1,12 @@
+a : byte 50;
+b : byte 0;
+
+byte func() {
+	when (a < b) then
+		return 1;
+	return 2;
+};
+
+byte main() {
+	a = func();
+	print a;

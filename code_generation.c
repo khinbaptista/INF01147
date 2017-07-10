@@ -336,7 +336,8 @@ void generate_instruction(TAC *tac, FILE* output) {
 		*/
 			fprintf(output, "movl\t$_%s, %%esi\n", tac->res->text);
 			fprintf(output, "movl\t$.percentD, %%edi\n");
-			fprintf(output, "call\t__isoc99_scanf\n");
+			fprintf(output, "movl\t$0, %%eax\n");
+			fprintf(output, "call\tscanf\n");
 			break;
 		case TAC_PRINT:
 		/*

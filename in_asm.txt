@@ -1,13 +1,18 @@
-a : byte 50;
-b : byte 0;
-
-byte func() {
-	when (a < b) then
-		return 1;
-	return 2;
-};
-
+a: short 10;
+b: short 21;
+i: short 1;
 byte main() {
-	a = func();
-	print a;
+	read a;
+	when (a == 1) then {
+		for (i = 0 to 10) {
+			print i * 2;
+		};
+	} else {
+		while(a >= -10) {
+			a = (a - 3);
+			print "a:" a;
+
+		};
+	};
+	return 0;
 };
