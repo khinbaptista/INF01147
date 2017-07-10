@@ -11,11 +11,11 @@ void generate_program(TAC *first, FILE* output) {
 	/* Generate strings section */
 	fprintf(output, "\n.section\t.rodata\n");
 	fprintf(output, ".percentD:\n");
-	fprintf(output, "\t.string \"%%d\\n\"\n");
+	fprintf(output, "\t.string \"%%d \"\n");
 	fprintf(output, ".percentDRead:\n");
 	fprintf(output, "\t.string \"%%d\"\n");
 	fprintf(output, ".percentS:\n");
-	fprintf(output, "\t.string \"%%s\"\n");
+	fprintf(output, "\t.string \"%%s \"\n");
 	generate_string_declarations(output);
 	fprintf(output, ".text\n");
 	/* Generate rest of program */
