@@ -12,6 +12,8 @@ void generate_program(TAC *first, FILE* output) {
 	fprintf(output, "\n.section\t.rodata\n");
 	fprintf(output, ".percentD:\n");
 	fprintf(output, "\t.string \"%%d\\n\"\n");
+	fprintf(output, ".percentDRead:\n");
+	fprintf(output, "\t.string \"%%d\"\n");
 	fprintf(output, ".percentS:\n");
 	fprintf(output, "\t.string \"%%s\"\n");
 	generate_string_declarations(output);
@@ -331,11 +333,11 @@ void generate_instruction(TAC *tac, FILE* output) {
 		case TAC_READ:
 		/*
 			movl	$variable, %esi
-			movl	$.LC0, %edi
-			call	__isoc99_scanf
+			movl	$.percentD, %edi
+			call	scanf
 		*/
 			fprintf(output, "movl\t$_%s, %%esi\n", tac->res->text);
-			fprintf(output, "movl\t$.percentD, %%edi\n");
+			fprintf(output, "movl\t$.percentDRead, %%edi\n");
 			fprintf(output, "movl\t$0, %%eax\n");
 			fprintf(output, "call\tscanf\n");
 			break;
@@ -348,8 +350,6 @@ void generate_instruction(TAC *tac, FILE* output) {
 			call	printf
 		*/
 		if(tac->res->type == SYMBOL_LIT_STRING) {
-			fprintf(output, "movl\t$.%s, %%eax\n", tac->res->string_name);
-			fprintf(output, "movl\t%%eax, %%esi\n");
 			fprintf(output, "movl\t$.%s, %%edi\n", tac->res->string_name);
 			fprintf(output, "movl\t$0, %%eax\n");
 			fprintf(output, "call\tprintf\n");
