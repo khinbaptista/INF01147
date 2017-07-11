@@ -122,7 +122,7 @@ void generate_instruction(TAC *tac, FILE* output) {
 			idivl	%ecx
 			movl	%eax, res(%rip)
 		*/
-			fprintf(output, "movl\t_%s(%%rip), %%edx\n", tac->op1->text);
+			fprintf(output, "movl\t_%s(%%rip), %%eax\n", tac->op1->text);
 			fprintf(output, "movl\t_%s(%%rip), %%ecx\n", tac->op2->text);
 			fprintf(output, "cltd\n");
 			fprintf(output, "idivl\t%%ecx\n");
