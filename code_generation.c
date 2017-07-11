@@ -45,18 +45,26 @@ void generate_instruction(TAC *tac, FILE* output) {
 			break;
 		case TAC_MOV_OFFSET:
 		/*
-			movl	value(%rip), %eax
-			movl	%eax, variable+{4*offset}(%rip)
+			movl	offset(%rip), %eax
+			movl	value(%rip), %edx
+			cltq
+			movl	%edx, array(,%rax,4)
 		*/
-			fprintf(output, "movl\t_%s(%%rip), %%eax\n", tac->op2->text);
-			fprintf(output, "movl\t%%eax, _%s+%d(%%rip)\n", tac->res->text, 4*atoi(tac->op1->text));
+			fprintf(output, "movl\t_%s(%%rip), %%eax\n", tac->op1->text);
+			fprintf(output, "movl\t_%s(%%rip), %%edx\n", tac->op2->text);
+			fprintf(output, "cltq\n");
+			fprintf(output, "movl\t%%edx, _%s(,%%rax,4)\n", tac->res->text);
 			break;
 		case TAC_ACCESS_OFFSET:
 		/*
-			movl	source+{4*offset}(%rip), %eax
+			movl	index(%rip), %eax
+			cltq
+			movl	var(,%rax,4), %eax
 			movl	%eax, destination(%rip)
 		*/
-			fprintf(output, "movl\t_%s+%d(%%rip), %%eax\n", tac->op1->text, 4*atoi(tac->op2->text));
+			fprintf(output, "movl\t_%s(%%rip), %%eax\n", tac->op2->text);
+			fprintf(output, "cltq\n");
+			fprintf(output, "movl\t_%s(,%%rax,4), %%eax\n", tac->op1->text);
 			fprintf(output, "movl\t%%eax, _%s(%%rip)\n", tac->res->text);
 			break;
 		case TAC_INC:

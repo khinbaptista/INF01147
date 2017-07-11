@@ -1,5 +1,7 @@
 etapa*
 *.o
 *.d
+*.s
+*.out
 lex.yy.c
 y.tab.*

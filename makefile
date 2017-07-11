@@ -53,6 +53,6 @@ test: lex.yy.c
 	gcc tests/index.c -o test.out && ./test.out && rm ./test.out
 
 clean:
-	rm -f *.o *.d lex.yy.c y.tab.h y.tab.c $(Project)
+	rm -f *.o *.d *.s *.out lex.yy.c y.tab.h y.tab.c $(Project)
 
 ##################################################
