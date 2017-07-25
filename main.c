@@ -34,10 +34,14 @@ int main(int argc, char* argv[]) {
 
 	yyparse();
 	fclose(input);
+	if(hasSyntaxError()) {
+		printf("\n==== Syntax errors found. Exiting... ====\n\n");
+		exit(3);
+	}
 	semantics_check(astree_root);
 
 	if(semantic_errors_found()) {
-		printf("\n==== Semantic errors. Exiting... ====\n\n");
+		printf("\n==== Semantic errors found. Exiting... ====\n\n");
 		exit(4);
 	}
 

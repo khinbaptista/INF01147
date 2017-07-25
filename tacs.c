@@ -259,24 +259,40 @@ TAC* tac_create_while(TAC* condition, TAC* cmd) {
 }
 
 TAC* tac_create_for(TAC* var, TAC* start, TAC* end, TAC* command) {
-	TAC* init_var = tac_create(TAC_MOV, var->res, start->res, NULL);
-	HashNode* hash_label_start = hash_make_label();
-	TAC* label_start = tac_create(TAC_LABEL, hash_label_start, NULL, NULL);
-	HashNode* hash_label_end = hash_make_label();
-	TAC* label_end = tac_create(TAC_LABEL, hash_label_end, NULL, NULL);
-	TAC* test_var = tac_create_bool_op(TAC_LESSER_EQ, var, end);
-	TAC* jump_to_end = tac_create(TAC_IFZ, hash_label_end, test_var->res, NULL);
-	TAC* increment_var = tac_create(TAC_INC, var->res, NULL, NULL);
-	TAC* jump_to_test = tac_create(TAC_JMP, hash_label_start, NULL, NULL);
-	return tac_join(tac_join(tac_join(tac_join(tac_join(tac_join(tac_join(
-		init_var,
-		label_start),
-		test_var),
-		jump_to_end),
-		command),
-		increment_var),
-		jump_to_test),
-		label_end);
+	int iterations = -1;
+	if(end->res->type == SYMBOL_LIT_INTEGER || end->res->type == SYMBOL_LIT_REAL) {
+		iterations = atoi(end->res->text);
+	}
+	if(0 < iterations && iterations < 20) {
+		/* Loop unrolling */
+		TAC* result = tac_create(TAC_MOV, var->res, start->res, NULL);
+		for(int i = 0; i <= iterations; i++) {
+			result = tac_join(tac_join(
+				result,
+				tac_copy(command)),
+				tac_create(TAC_INC, var->res, NULL, NULL));
+		}
+		return result;
+	} else {
+		TAC* init_var = tac_create(TAC_MOV, var->res, start->res, NULL);
+		HashNode* hash_label_start = hash_make_label();
+		TAC* label_start = tac_create(TAC_LABEL, hash_label_start, NULL, NULL);
+		HashNode* hash_label_end = hash_make_label();
+		TAC* label_end = tac_create(TAC_LABEL, hash_label_end, NULL, NULL);
+		TAC* test_var = tac_create_bool_op(TAC_LESSER_EQ, var, end);
+		TAC* jump_to_end = tac_create(TAC_IFZ, hash_label_end, test_var->res, NULL);
+		TAC* increment_var = tac_create(TAC_INC, var->res, NULL, NULL);
+		TAC* jump_to_test = tac_create(TAC_JMP, hash_label_start, NULL, NULL);
+		return tac_join(tac_join(tac_join(tac_join(tac_join(tac_join(tac_join(
+			init_var,
+			label_start),
+			test_var),
+			jump_to_end),
+			command),
+			increment_var),
+			jump_to_test),
+			label_end);
+	}
 }
 
 TAC* tac_create_cmd_read(TAC* var) {
@@ -292,16 +308,20 @@ TAC* tac_create_cmd_print(TAC* prev_arg, TAC* curr_arg) {
 
 
 TAC* tac_join(TAC *tac1, TAC *tac2) {
-	TAC *tac;
-
 	if (!tac1) return tac2;
 	if (!tac2) return tac1;
-
-	tac = tac2;
+	TAC* tac = tac2;
 	while (tac->prev) { tac = tac->prev; }
 	tac->prev = tac1;
 
 	return tac2;
+}
+
+TAC* tac_copy(TAC* tac) {
+	if (!tac) return NULL;
+	TAC* newTac = tac_create(tac->type, tac->res, tac->op1, tac->op2);
+	newTac->prev = tac_copy(tac->prev);
+	return newTac;
 }
 
 TAC* tac_reverse(TAC* tac) {

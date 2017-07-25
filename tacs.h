@@ -53,6 +53,7 @@ typedef struct tac {
 TAC* tac_generate(struct astree*);
 
 TAC* tac_create(int type, HashNode*, HashNode*, HashNode*);
+TAC* tac_copy(TAC* tac);
 
 TAC* tac_join(TAC*, TAC*);
 TAC* tac_reverse(TAC*);

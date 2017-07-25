@@ -97,12 +97,13 @@ literal	: LIT_INTEGER { $$ = ast_literal($1); }
 | LIT_CHAR			  { $$ = ast_literal($1); }
 ;
 
-global_decl_set	: global_decl global_decl_set { $$ = ast_program($1, $2); astree_root = $$; }
+global_decl_set	: global_decl ';' global_decl_set { $$ = ast_program($1, $3); astree_root = $$; }
+| error ';' global_decl_set { yyerrok; }
 | {$$ = NULL;}
 ;
 
-global_decl	: func_decl ';' { $$ = $1; }
-| var_decl ';'				{ $$ = $1; }
+global_decl	: func_decl { $$ = $1; }
+| var_decl				{ $$ = $1; }
 ;
 
 var_decl :	TK_IDENTIFIER ':' type literal	{ $$ = ast_var_decl($1, $3, $4); }
@@ -149,6 +150,8 @@ command_block :	'{' command_seq '}' { $$ = ast_cmd_block($2); }
 ;
 
 command_seq	: command_seq command ';' { $$ = ast_cmd_list($1, $2); }
+| command_seq error command ';' 	  { fprintf(stderr, "Probably missing ';', see previous errors...\n"); yyerrok; }
+| command_seq error ';' 			  { yyerrok; }
 | 									  { $$ = NULL; }
 ;
 
@@ -182,6 +185,7 @@ flow_ctrl :	KW_WHEN '(' expr ')' KW_THEN command { $$ = ast_cmd_when($3, $6); }
 ;
 
 expr : '(' expr ')'	{ $$ = ast_expr_parens($2); }
+| '(' expr error	{ yyerrok; fprintf(stderr, "Unclosed parentheses\n"); }
 | expr '+' expr		{ $$ = ast_op(AST_EXPR_SUM, $1, $3); }
 | expr '-' expr		{ $$ = ast_op(AST_EXPR_SUB, $1, $3); }
 | expr '*' expr		{ $$ = ast_op(AST_EXPR_MULT, $1, $3); }
@@ -208,6 +212,11 @@ expr_arg : identifier	{ $$ = ast_expr_scalar_access($1); }
 %%
 
 int yyerror(char* what) {
-	fprintf(stderr, "\nParser error at line %d: %s\n", getLineNumber(), what);
-	exit(3);
+	if(checkSpecificSyntaxError()) {
+		toggleSpecificSyntaxError();
+	} else {
+		fprintf(stderr, "Error parsing line %d: %s\n", getLineNumber(), what);
+	}
+	setSyntaxError(1);
+	return 0;
 }
